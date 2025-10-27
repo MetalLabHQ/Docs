@@ -167,7 +167,7 @@ private func makeView() -> MTKView {
 }
 ```
 
-* `MTKView` 是 Apple 提供的 Metal 视图容器
-* `colorPixelFormat = .bgra8Unorm` 设置颜色缓冲区格式，这是大多数设备都支持的标准格式
-* `mtkView.delegate = renderer` 将渲染器设置为代理，MTKView 会在需要渲染时自动调用渲染器的方法
-* `clearColor` 设置每次渲染前清屏的颜色，这里设置为纯黑色
+* MTKView 是 Apple 提供的 Metal 视图容器
+* colorPixelFormat 设置颜色缓冲区格式，bgra8Unorm 是大多数设备都支持的标准格式
+* mtkView.delegate = renderer 将渲染器设置为代理，MTKView 会在需要渲染时自动调用渲染器的方法
+* clearColor 则是每次渲染前清屏的颜色，这里设置为纯黑色

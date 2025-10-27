@@ -28,15 +28,15 @@ description: Hello, Triangle.
 
 #### 开始准备数据结构
 
-创建 Vertex.swift 作为顶点坐标数据结构，使用 `SIMD3<Float>` 表示 position 是长度为 3 的定长 Float 数组，SIMD 详情请看：SIMDxxxx
+在 Model 路径下创建 Vertex.swift 作为顶点坐标数据结构，使用 `SIMD3<Float>` 表示 position 是长度为 3 的定长 Float 数组，SIMD 详情：
 
-\#todo 待添加 SIMD Page
+[simd-shu-ju-jie-gou.md](../xiao-zhi-shi-dian/simd-shu-ju-jie-gou.md "mention")
 
 绘制三角形只需要知道三个顶点的坐标和颜色。
 
 用 SIMD 创建 position 的 xyz 坐标，用 SIMD4 创建 color 的 rgba 颜色值（a为透明度，即 Alpha 通道）
 
-随后手动定义三个顶点数组
+随后手动定义三个顶点的 Vertex 数组
 
 ```swift
 import simd
@@ -540,4 +540,4 @@ renderEncoder.drawPrimitives(
 
 这下你应该可以看见一个三角形了，是不是感觉压力一下就上来了！没关系，可以多学几遍，下面是回到顶部的按钮，欢迎反复阅读！
 
-<a href="../metal-4-he-xin-api.md" class="button secondary" data-icon="angle-up">回到顶部</a>
+<a href="ni-hao-san-jiao-xing.md#tu-xing-xue-ru-men-di-yi-ke" class="button secondary" data-icon="angle-up">回到顶部</a>
