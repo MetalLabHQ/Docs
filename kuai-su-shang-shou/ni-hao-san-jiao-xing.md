@@ -14,21 +14,19 @@ description: Hello, Triangle.
 
 绘制三角形是图形学中的的经典课程，其中经常能见到一些梗图（指花了一下午时间学习了使用图形 API 绘制出第一个三角形，然后放弃）
 
-<figure><img src="../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/ I Know OpenGL.png" alt=""><figcaption></figcaption></figure>
 
-不过在这之前，先整理一下文件结构方便后续开发，将文件进行归类
-
-<p align="center"><img src="../.gitbook/assets/image (3).png" alt="" data-size="original"></p>
-
-也可以下载该工程作为起点：
+不过在这之前，先整理一下文件结构方便后续开发，将文件进行归类，下载该工程作为起点：
 
 {% file src="../.gitbook/assets/HelloTriangle.7z" %}
+初始工程
+{% endfile %}
 
 接下来我们会跳过一些复杂抽象的概念（会在后面到教程中讲到），便于逐步理解图形学
 
 #### 开始准备数据结构
 
-在 Model 路径下创建 Vertex.swift 作为顶点坐标数据结构，使用 `SIMD3<Float>` 表示 position 是长度为 3 的定长 Float 数组，SIMD 详情：
+在 Models 路径下创建 Vertex.swift 作为顶点坐标数据结构，使用 `SIMD3<Float>` 表示 position 是长度为 3 的定长 Float 数组，SIMD 详情：
 
 [simd-shu-ju-jie-gou.md](../xiao-zhi-shi-dian/simd-shu-ju-jie-gou.md "mention")
 
@@ -240,10 +238,10 @@ MSL 语言的语法是基于 C++，但做了一些限制与拓展，此处我们
   * 处理三维坐标的顶点、法向量、纹理坐标、顶点颜色等等数据
   * 将三维坐标转换为二维的屏幕坐标，装配成一个个图元，送入**光栅化**阶段
 * **片元着色器 Fragment Shader**
-  * 光栅化将图元变成离散形式的片元，专门由片元着色器进行处理
-  * 对像素片元进行颜色混合、测试等，最终呈现于屏幕上
+  * 专门处理光栅化将图元变成离散形式的片元
+  * 对像素片元进行颜色混合、测试等操作，最终呈现于屏幕上
 
-这里我们需要使用 Shader 对传入进来的 Vertex Buffer 进行处理，根据 [#miao-shu-shu-ju-jie-gou-de-nei-cun-bu-ju](ni-hao-san-jiao-xing.md#miao-shu-shu-ju-jie-gou-de-nei-cun-bu-ju "mention") 上可得知传入的 Vertex 数据结构的内存布局，接下来在 Shader 文件夹内，创建 `Shaders.metal` 文件
+这里我们需要使用 Shader 对传入进来的 Vertex Buffer 进行处理，根据 [#miao-shu-shu-ju-jie-gou-de-nei-cun-bu-ju](ni-hao-san-jiao-xing.md#miao-shu-shu-ju-jie-gou-de-nei-cun-bu-ju "mention") 上可得知传入的 Vertex 数据结构的内存布局，接下来在 Shaders 文件夹内，创建 `Shaders.metal` 文件
 
 创建与 [#kai-shi-zhun-bei-shu-ju-jie-gou](ni-hao-san-jiao-xing.md#kai-shi-zhun-bei-shu-ju-jie-gou "mention") 中的 Vertex 对应的 VertexIn 作为输入 VertexBuffer 的数据结构
 
@@ -524,6 +522,8 @@ renderEncoder.setArgumentTable(vertexArgumentTable, stages: .vertex)
 
 #### 绘制！
 
+GPU 在得到数组内存地址后，按照 Vertex 的布局情况，分别取三次，拿到了三个顶点
+
 接下来使用 drawPrimitives 函数让 GPU 绘制三角形！
 
 * **type**：图元组装类型，将顶点组装成三角形图元，意味着三个顶点会组合成一个三角形
@@ -538,6 +538,19 @@ renderEncoder.drawPrimitives(
 )
 ```
 
+<details>
+
+<summary>发生什么事了？</summary>
+
+1. [#chuan-di-shu-ju-zhi-gpu](ni-hao-san-jiao-xing.md#chuan-di-shu-ju-zhi-gpu "mention") 传递了三个 Vertex 顶点组成的数组的内存地址
+2. [#miao-shu-shu-ju-jie-gou-de-nei-cun-bu-ju](ni-hao-san-jiao-xing.md#miao-shu-shu-ju-jie-gou-de-nei-cun-bu-ju "mention")传递了 Vertex 的内存布局信息，告诉了 GPU 要如何从数组里面解析成 Vertex（前16字节为 position，后 16字节为 color）
+3. 顶点的数量，让 GPU 以 Vertex 的形式取三次并绘制成三角形
+4. [#ding-dian-zhuo-se-qi-vertex-shader](ni-hao-san-jiao-xing.md#ding-dian-zhuo-se-qi-vertex-shader "mention") 让每个顶点通过顶点着色器计算，把三维坐标转换为二维的屏幕坐标，将结果（屏幕坐标与顶点颜色）送入光栅化
+5. [#pian-yuan-zhuo-se-qi-fragment-shader](ni-hao-san-jiao-xing.md#pian-yuan-zhuo-se-qi-fragment-shader "mention")拿到光栅化后的片元，将颜色显示在片元上
+
+</details>
+
 这下你应该可以看见一个三角形了，是不是感觉压力一下就上来了！没关系，可以多学几遍，下面是回到顶部的按钮，欢迎反复阅读！
 
 <a href="ni-hao-san-jiao-xing.md#tu-xing-xue-ru-men-di-yi-ke" class="button secondary" data-icon="angle-up">回到顶部</a>
+

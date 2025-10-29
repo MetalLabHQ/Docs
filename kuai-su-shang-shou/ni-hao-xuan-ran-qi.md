@@ -131,4 +131,4 @@ renderEncoder.endEncoding()
 
 至此，点击运行应该能看见一个纯色的背景了。
 
-至此，Metal View 就完成了，这是完整代码：
+延伸阅读：[ming-ling-dui-lie-command-queue](../ming-ling-dui-lie-command-queue/ "mention")

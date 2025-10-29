@@ -8,7 +8,7 @@ description: Hello, Metal.
 
 **Metal Lab 是基于 Apple Metal API 生态的中文图形学社区**，致力于推进 Metal 图形学生态，为初学者提供一个学习的方向
 
-Metal Lab 上大部分内容引用自 [Apple Metal 文档](https://developer.apple.com/documentation/metal)，并对其进行简化以便理解。
+Metal Lab 上大部分内容引用自 [Apple Metal 文档](https://developer.apple.com/documentation/metal)、Games 101、RTR4 等教程。
 
 ### 为什么需要 Metal Lab 中文文档？
 
@@ -26,7 +26,9 @@ Metal Lab 上大部分内容引用自 [Apple Metal 文档](https://developer.app
 
 换句话说，**Metal 是一个“适中”的 API**：它不像 OpenGL 那样封装太多，导致性能损耗和控制受限；也不像 Vulkan 那样需要你处理太多底层细节，造成学习成本飙升。它为你提供了一个清晰、简单且高性能的接口，让开发者能够真正“贴近硬件”，而不被繁杂的代码结构所拖累。
 
-尤其是对于希望在**iOS、macOS、tvOS**平台开发高性能图形应用的开发者而言，Metal 是唯一被 Apple 官方推荐的图形 API，具有广泛的应用前景和更长远的技术生命周期。
+尤其是对于希望在 **iOS、macOS、visionOS** 平台开发高性能图形应用的开发者而言，Metal 是唯一被 Apple 官方推荐的图形 API，具有广泛的应用前景和更长远的技术生命周期。
+
+随着 AI 时代来临，**MPS (Metal Performance Shaders)** 让 GPU 运行卷积、矩阵乘法、激活函数 AI 模型的核心算子。相比自己手写 Metal shader，MPS 已经针对 Apple Silicon 进行了深度优化，能够自动利用 SIMD 指令、内存层次结构等硬件特性。
 
 ### 该教程文档的定位
 
