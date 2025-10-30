@@ -266,7 +266,7 @@ func lookAt(eye: SIMD3<Float>, center: SIMD3<Float>, up: SIMD3<Float>) -> float4
 
 熟悉美术的同学应该知道**透视**这个概念，即三维物体在二维平面上，以近大远小的方式呈现出纵深感
 
-而在图形学中，这种行为称为 [tou-ying-projection](../mvp-ju-zhen-modelviewprojection/tou-ying-projection/ "mention")
+而在图形学中，这种行为称为 [tou-ying-projection](../group-1/mvp-ju-zhen-modelviewprojection/tou-ying-projection/ "mention")
 
 <figure><img src="../.gitbook/assets/透视与正交投影区别.png" alt="" width="375"><figcaption><p>左侧为正交投影 Orthographic，右侧为透视投影 Perspective</p></figcaption></figure>
 

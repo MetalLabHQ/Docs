@@ -12,13 +12,16 @@
 * [你好，三角形](kuai-su-shang-shou/ni-hao-san-jiao-xing.md)
 * [你好，Cube](kuai-su-shang-shou/ni-hao-cube.md)
 
+## Group 1
+
+* [观测变换 View Transformation](group-1/guan-ce-bian-huan-view-transformation.md)
+* [MVP 矩阵(Model-View-Projection)](group-1/mvp-ju-zhen-modelviewprojection/README.md)
+  * [投影 Projection](group-1/mvp-ju-zhen-modelviewprojection/tou-ying-projection/README.md)
+    * [透视投影 Perspective Projection](group-1/mvp-ju-zhen-modelviewprojection/tou-ying-projection/tou-shi-tou-ying-perspective-projection.md)
+    * [正交投影 Orthographic Projection](group-1/mvp-ju-zhen-modelviewprojection/tou-ying-projection/zheng-jiao-tou-ying-orthographic-projection.md)
+
 ***
 
-* [MVP 矩阵(Model-View-Projection)](mvp-ju-zhen-modelviewprojection/README.md)
-  * [投影 Projection](mvp-ju-zhen-modelviewprojection/tou-ying-projection/README.md)
-    * [透视投影 Perspective Projection](mvp-ju-zhen-modelviewprojection/tou-ying-projection/tou-shi-tou-ying-perspective-projection.md)
-    * [正交投影 Orthographic Projection](mvp-ju-zhen-modelviewprojection/tou-ying-projection/zheng-jiao-tou-ying-orthographic-projection.md)
-* [观测变换 View Transformation](guan-ce-bian-huan-view-transformation.md)
 * [空间坐标系](kong-jian-zuo-biao-xi/README.md)
   * [模型空间 Model Space](kong-jian-zuo-biao-xi/mo-xing-kong-jian-model-space.md)
 * [小知识点](xiao-zhi-shi-dian/README.md)
