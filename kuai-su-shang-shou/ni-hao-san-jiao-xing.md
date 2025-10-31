@@ -32,7 +32,7 @@ description: Hello, Triangle.
 
 <img src="../.gitbook/assets/三角形的三个顶点位置.svg" alt="三角形的三个顶点在坐标系中的样子" class="gitbook-drawing">
 
-用 SIMD 创建 position 的 xyz 坐标，用 SIMD4 创建 color 的 rgba 颜色值（a为透明度，即 Alpha 通道）
+用 SIMD3 创建 position 的 xyz 坐标，用 SIMD4 创建 color 的 rgba 颜色值（a为透明度，即 Alpha 通道）
 
 随后手动定义三个顶点的 Vertex 数组
 
