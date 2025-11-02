@@ -11,6 +11,7 @@
 * [你好，渲染器](kuai-su-shang-shou/ni-hao-xuan-ran-qi.md)
 * [你好，三角形](kuai-su-shang-shou/ni-hao-san-jiao-xing.md)
 * [你好，Cube](kuai-su-shang-shou/ni-hao-cube.md)
+* [深度测试](kuai-su-shang-shou/shen-du-ce-shi.md)
 
 ## 光栅化流程
 
@@ -32,6 +33,7 @@
 * [小知识点](xiao-zhi-shi-dian/README.md)
   * [SIMD 数据结构](xiao-zhi-shi-dian/simd-shu-ju-jie-gou.md)
   * [内存布局 Memory Layout](xiao-zhi-shi-dian/nei-cun-bu-ju-memory-layout.md)
+  * [Page 1](xiao-zhi-shi-dian/page-1.md)
 * [命令队列 Command Queue](ming-ling-dui-lie-command-queue/README.md)
   * [命令编码器 Command Encoder](ming-ling-dui-lie-command-queue/ming-ling-bian-ma-qi-command-encoder.md)
   * [命令缓冲区 Command Buffer](ming-ling-dui-lie-command-queue/ming-ling-huan-chong-qu-command-buffer.md)

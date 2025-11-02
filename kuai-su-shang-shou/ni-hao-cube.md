@@ -8,9 +8,7 @@ description: 多来几个面！
 
 {% embed url="https://github.com/MetalLabHQ/HelloCube.git" %}
 
-本章节会带你理解光栅化渲染流程，从而了解 3D 模型是如何通过数学计算变换到屏幕像素上的。
-
-从 [ni-hao-san-jiao-xing.md](ni-hao-san-jiao-xing.md "mention") 工程过来，需要下载该工程作为起点：
+本章节会带你理解光栅化渲染流程，从而了解 3D 模型是如何通过数学计算变换到屏幕像素上的，需要下载该工程作为起点：
 
 {% file src="../.gitbook/assets/HelloCube.7z" %}
 初始工程
@@ -143,7 +141,7 @@ $$
 
 运行工程，应该能见到这样的画面
 
-<div><figure><img src="../.gitbook/assets/HelloCube 未收到预期画面.png" alt="" width="375"><figcaption></figcaption></figure> <figure><img src="../.gitbook/assets/Hello Cube.png" alt="" width="456"><figcaption></figcaption></figure></div>
+<div><figure><img src="../.gitbook/assets/HelloCube 未收到预期画面.png" alt=""><figcaption></figcaption></figure> <figure><img src="../.gitbook/assets/绘制深度测试后立方体.png" alt=""><figcaption></figcaption></figure></div>
 
 似乎不太对劲？和我们期望看到的画面不一样，而右图才是我们希望看见的样子。
 
@@ -151,7 +149,7 @@ $$
 
 ## MVP 矩阵
 
-MVP 矩阵为 3D 图形渲染提供了标准化的坐标变换流程，这里只做简单讲解，并不会涉及太多远离，详情可以去看本教程的线性代数部分与光栅化流程 #todo
+MVP 矩阵为 3D 图形渲染提供了标准化的坐标变换流程，这里只做简单讲解，并不会涉及太多原理，详情可以去看本教程的线性代数部分与光栅化流程 #todo
 
 **设想我们如何拍一张照片？**
 
@@ -313,6 +311,8 @@ $$
 
 <summary>Perspective.swift</summary>
 
+同时归一化到 [gui-yi-hua-she-bei-kong-jian-ndcnormalized-device-coordinates.md](../kong-jian-zuo-biao-xi/gui-yi-hua-she-bei-kong-jian-ndcnormalized-device-coordinates.md "mention") 空间
+
 ```swift
 import simd
 
@@ -378,7 +378,7 @@ self.uniformsBuffer = device.makeBuffer(
 
 前往项目设置，也就是 Xcode 左侧导航栏上蓝色小锤子，选中对应的 Target，在 Build Settings 中的右上角搜索：**Objective-C Bridging Header**
 
-双击并修改为：`$(SRCROOT)/HelloCube/Shaders/Common.h`
+双击并修改为：`$(SRCROOT)/$(TARGET_NAME)/Shaders/Common.h`
 
 再次编译，就能看到 Xcode Build Success 了
 
@@ -398,7 +398,7 @@ vertexArgumentTable.setAddress(uniformsBuffer.gpuAddress, index: 1)
 
 ```swift
 var camera = Camera(
-    position: SIMD3<Float>(0, 1, 3),
+    position: SIMD3<Float>(2, 2, 3),
     target: SIMD3<Float>(0, 0, 0),
     up: SIMD3<Float>(0, 1, 0)
 )
@@ -418,7 +418,7 @@ func updateUniforms(uniformBuffer: MTLBuffer, aspect: Float) {
     
     let projectionMatrix = perspective(
         aspect: aspect,
-        fovy: .pi / 3,
+        fovy: .pi / 4,
         near: 0.1,
         far: 100
     )
