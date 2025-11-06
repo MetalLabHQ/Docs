@@ -23,8 +23,9 @@ Metal 4 是一个苹果生态的的图形 API，在开始学习 Metal 之前，�
 * **HelloMetalViewApp.swift**：含 `@main` 的程序入口&#x20;
 * **ContentView.swift**：视图部分，接下来将主要对该文件进行修改
 
-在这之前，由于 macOS 使用 NextStep 继承下来的 AppKit，而 iOS/iPadOS/visionOS 等平台使用 UIKit，所以需要对 Apple 相关运行平台进行兼容，创建 **PlatformCompatibility.swift** 文件：
+在这之前，需要对 Apple 相关运行平台进行兼容，详情见 [duo-ping-tai-jian-rong-viewrepresentable.md](../duo-ping-tai-jian-rong-viewrepresentable.md "mention")，创建 **PlatformCompatibility.swift** 文件：
 
+{% code title="PlatformCompatibility.swift" %}
 ```swift
 import SwiftUI
 
@@ -40,6 +41,7 @@ typealias PlatformViewController = UIViewController
 typealias PlatformColor = UIColor
 #endif
 ```
+{% endcode %}
 
 这里的 **`typealias`** 是类似 C 语言中 **`typedef`** 的用法，给一个类型起一个别名来实现跨平台的应用开发。
 

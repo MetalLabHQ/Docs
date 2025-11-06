@@ -34,13 +34,16 @@ description: Hello, Triangle.
 
 用 SIMD3 创建 position 的 xyz 坐标，用 SIMD4 创建 color 的 rgba 颜色值（a为透明度，即 Alpha 通道）
 
-随后手动定义三个顶点的 Vertex 数组
+随后手动定义三个顶点的 Vertex 数组，在 Model 下创建 Vertex.swift
 
+{% code title="Vertex.swift" %}
 ```swift
 import simd
 
-struct Vertex { // 数据结构
+struct Vertex { // 顶点数据结构
+    /// 顶点坐标 XYZ
     let position: SIMD3<Float>
+    /// 颜色 RGBA
     let color: SIMD4<Float>
 }
 
@@ -50,6 +53,7 @@ let vertices: [Vertex] = [
     Vertex(position: SIMD3<Float>(0.5, -0.5, 0.0), color: SIMD4<Float>(0.0, 0.0, 1.0, 1.0))    // 顶点 3 (蓝色)
 ]
 ```
+{% endcode %}
 
 #### 描述数据结构的内存布局
 
@@ -64,12 +68,13 @@ let vertices: [Vertex] = [
 
 由此可知，整个 Vertex 的总占用内存大小为 32 字节，那回到 Renderer 的初始化 init 中，做好对该数据结构的内存布局描述，告诉 GPU 要怎么读
 
-根据上表可知：
+在 Renderer 初始化中，根据上表可知：
 
 {% tabs %}
 {% tab title="内存布局" %}
 ```swift
-// MARK: - 描述内存布局
+// MARK: - 顶点描述符
+// 描述顶点内存布局
 let vertexDescriptor = MTLVertexDescriptor()
 // 配置 position 属性
 vertexDescriptor.attributes[0].format = .float3 // 数据类型：3 个浮点数
@@ -92,25 +97,29 @@ vertexDescriptor.layouts[0].stride = MemoryLayout<Vertex>.stride // 32 字节
 ```swift
 init(device: MTLDevice) throws {
     self.device = device
-    self.commandQueue = device.makeMTL4CommandQueue()!
-    self.commandBuffer = device.makeCommandBuffer()!
-    self.commandAllocator = device.makeCommandAllocator()!
     
+    // MARK: - 配置命令队列 Command Queue
+    commandQueue = device.makeMTL4CommandQueue()!
+    commandBuffer = device.makeCommandBuffer()!
+    commandAllocator = device.makeCommandAllocator()!
+        
+    // MARK: - 顶点描述符
+    // 描述顶点内存布局
     let vertexDescriptor = MTLVertexDescriptor()
     // 配置 position 属性
-    vertexDescriptor.attributes[0].format = .float3 // 3 个浮点数
+    vertexDescriptor.attributes[0].format = .float3 // 数据类型：3 个浮点数
     vertexDescriptor.attributes[0].offset = 0 // position 的偏移量是 0
     vertexDescriptor.attributes[0].bufferIndex = 0 // 从第 0 个缓冲区读取数据
     
     // 配置 color 属性
-    vertexDescriptor.attributes[1].format = .float4 // 4 个浮点数
+    vertexDescriptor.attributes[1].format = .float4 // 数据类型：4 个浮点数
     vertexDescriptor.attributes[1].offset = MemoryLayout<SIMD3<Float>>.stride // 偏移量是 16 字节
     vertexDescriptor.attributes[1].bufferIndex = 0 // 也从第 0 个缓冲区读取数据
     
     // 定义顶点内存布局
     vertexDescriptor.layouts[0].stride = MemoryLayout<Vertex>.stride // 32 字节
-    // vertexDescriptor.layouts[0].stepRate = 1                      // 步频为 1，不跳过任何顶点
-    // vertexDescriptor.layouts[0].stepFunction = .perVertex         // 逐顶点处理
+    // vertexDescriptor.layouts[0].stepRate = 1                         // 步频为 1，不跳过任何顶点
+    // vertexDescriptor.layouts[0].stepFunction = .perVertex            // 逐顶点处理
     
     super.init()
 }
@@ -120,7 +129,7 @@ init(device: MTLDevice) throws {
 
 #### 传递数据至 GPU
 
-绘制三角形需要将顶点数据传递给 GPU，毕竟  GPU 才是干活
+绘制三角形需要将顶点数据传递给 GPU，毕竟  GPU 才是干活的
 
 那 CPU 与 GPU 之间的数据传递，CPU 通过 MTLBuffer 将数据传递给 GPU，这里先将三角形的顶点数组做成 Buffer 传递给 GPU
 
@@ -129,62 +138,84 @@ Metal 4 需要使用 ArgumentTable 来描述 Buffer 传递情况
 {% tabs %}
 {% tab title="创建 Buffer 与设定参数表" %}
 ```swift
+// MARK: - Buffers
 let vertexBuffer: MTLBuffer                     // 顶点缓冲区
-let vertexArgumentTable: MTL4ArgumentTable      // 顶点着色器参数表
 
-// MARK: - 设置参数表与 MTLBuffer
-// 使用三角形的顶点数组创建 MTLBuffer
-self.vertexBuffer = device.makeBuffer(bytes: vertices, length: vertices.count * MemoryLayout<Vertex>.stride, options: [])!
+// MARK: - State
+let argumentTable: MTL4ArgumentTable            // 参数表
 
-// 准备参数表描述符
+
+// MARK: - 设置 Buffer
+// 使用三角形的顶点数组创建 Buffer
+self.vertexBuffer = device.makeBuffer(
+    // 传递给 GPU 的数据
+    bytes: vertices,
+    // 数据的字节长度，以 Vertex 的内存大小 * 数组长度计算得出
+    length: vertices.count * MemoryLayout<Vertex>.stride
+)!
+
+
+// MARK: - 描述符 Descriptor
+// 参数表
 let argTableDescriptor = MTL4ArgumentTableDescriptor()
-// 最多可以绑定一个 Buffer
-argTableDescriptor.maxBufferBindCount = 1
-// 创建参数表给自身属性
-self.vertexArgumentTable = try device.makeArgumentTable(descriptor: argTableDescriptor)
-
-// 将三角形顶点 Buffer 设为第 0 个 Buffer
-vertexArgumentTable.setAddress(vertexBuffer.gpuAddress, index: 0)
+argTableDescriptor.maxBufferBindCount = 1 // 最多可以绑定一个 Buffer
+self.argumentTable = try device.makeArgumentTable(descriptor: argTableDescriptor)
+self.argumentTable.setAddress(vertexBuffer.gpuAddress, index: 0) // 将三角形顶点 Buffer 设为第 0 个 Buffer
 ```
 {% endtab %}
 
 {% tab title="完整代码" %}
 ```swift
+// MARK: - Buffers
 let vertexBuffer: MTLBuffer                     // 顶点缓冲区
-let vertexArgumentTable: MTL4ArgumentTable      // 顶点着色器参数表
+
+// MARK: - State
+let argumentTable: MTL4ArgumentTable            // 参数表
 
 init(device: MTLDevice) throws {
     self.device = device
+    
+    // MARK: - 配置命令队列 Command Queue
     self.commandQueue = device.makeMTL4CommandQueue()!
     self.commandBuffer = device.makeCommandBuffer()!
     self.commandAllocator = device.makeCommandAllocator()!
     
-    // MARK: - 描述内存布局
+    // MARK: - 顶点描述符
+    // 描述顶点内存布局
     let vertexDescriptor = MTLVertexDescriptor()
     // 配置 position 属性
     vertexDescriptor.attributes[0].format = .float3 // 数据类型：3 个浮点数
     vertexDescriptor.attributes[0].offset = 0 // position 的偏移量是 0
     vertexDescriptor.attributes[0].bufferIndex = 0 // 从第 0 个缓冲区读取数据
-
+    
     // 配置 color 属性
     vertexDescriptor.attributes[1].format = .float4 // 数据类型：4 个浮点数
     vertexDescriptor.attributes[1].offset = MemoryLayout<SIMD3<Float>>.stride // 偏移量是 16 字节
     vertexDescriptor.attributes[1].bufferIndex = 0 // 也从第 0 个缓冲区读取数据
-
+    
     // 定义顶点内存布局
     vertexDescriptor.layouts[0].stride = MemoryLayout<Vertex>.stride // 32 字节
     // vertexDescriptor.layouts[0].stepRate = 1                         // 步频为 1，不跳过任何顶点
     // vertexDescriptor.layouts[0].stepFunction = .perVertex            // 逐顶点处理
     
     
-    // MARK: - 设置参数表与 Buffer
+    // MARK: - 设置 Buffer
     // 使用三角形的顶点数组创建 Buffer
-    self.vertexBuffer = device.makeBuffer(bytes: vertices, length: vertices.count * MemoryLayout<Vertex>.stride, options: [])!
+    self.vertexBuffer = device.makeBuffer(
+        // 传递给 GPU 的数据
+        bytes: vertices,
+        // 数据的字节长度，以 Vertex 的内存大小 * 数组长度计算得出
+        length: vertices.count * MemoryLayout<Vertex>.stride
+    )!
     
+    
+    // MARK: - 描述符 Descriptor
+    // 参数表
     let argTableDescriptor = MTL4ArgumentTableDescriptor()
     argTableDescriptor.maxBufferBindCount = 1 // 最多可以绑定一个 Buffer
-    self.vertexArgumentTable = try device.makeArgumentTable(descriptor: argTableDescriptor)
-    vertexArgumentTable.setAddress(vertexBuffer.gpuAddress, index: 0)
+    self.argumentTable = try device.makeArgumentTable(descriptor: argTableDescriptor)
+    self.argumentTable.setAddress(vertexBuffer.gpuAddress, index: 0) // 将三角形顶点 Buffer 设为第 0 个 Buffer
+    
     
     super.init()
 }
@@ -330,6 +361,7 @@ vertexFunctionDescriptor.name      = "vertex_main"
 let fragmentFunctionDescriptor     = MTL4LibraryFunctionDescriptor()
 fragmentFunctionDescriptor.library = library
 fragmentFunctionDescriptor.name    = "fragment_main"
+
 ```
 {% endtab %}
 
@@ -337,40 +369,45 @@ fragmentFunctionDescriptor.name    = "fragment_main"
 ```swift
 init(device: MTLDevice) throws {
     self.device = device
+    
+    // MARK: - 配置命令队列 Command Queue
     self.commandQueue = device.makeMTL4CommandQueue()!
     self.commandBuffer = device.makeCommandBuffer()!
     self.commandAllocator = device.makeCommandAllocator()!
     
-    // MARK: - 描述内存布局
+    
+    // MARK: - 顶点描述符
+    // 描述顶点内存布局
     let vertexDescriptor = MTLVertexDescriptor()
     // 配置 position 属性
     vertexDescriptor.attributes[0].format = .float3 // 数据类型：3 个浮点数
     vertexDescriptor.attributes[0].offset = 0 // position 的偏移量是 0
     vertexDescriptor.attributes[0].bufferIndex = 0 // 从第 0 个缓冲区读取数据
-
+    
     // 配置 color 属性
     vertexDescriptor.attributes[1].format = .float4 // 数据类型：4 个浮点数
     vertexDescriptor.attributes[1].offset = MemoryLayout<SIMD3<Float>>.stride // 偏移量是 16 字节
     vertexDescriptor.attributes[1].bufferIndex = 0 // 也从第 0 个缓冲区读取数据
-
+    
     // 定义顶点内存布局
     vertexDescriptor.layouts[0].stride = MemoryLayout<Vertex>.stride // 32 字节
     // vertexDescriptor.layouts[0].stepRate = 1                         // 步频为 1，不跳过任何顶点
     // vertexDescriptor.layouts[0].stepFunction = .perVertex            // 逐顶点处理
     
     
-    // MARK: - 设置参数表与 Buffer
+    // MARK: - 设置 Buffer
     // 使用三角形的顶点数组创建 Buffer
-    self.vertexBuffer = device.makeBuffer(bytes: vertices, length: vertices.count * MemoryLayout<Vertex>.stride, options: [])!
-    
-    let argTableDescriptor = MTL4ArgumentTableDescriptor()
-    argTableDescriptor.maxBufferBindCount = 1 // 最多可以绑定一个 Buffer
-    self.vertexArgumentTable = try device.makeArgumentTable(descriptor: argTableDescriptor)
-    vertexArgumentTable.setAddress(vertexBuffer.gpuAddress, index: 0)
+    self.vertexBuffer = device.makeBuffer(
+        // 传递给 GPU 的数据
+        bytes: vertices,
+        // 数据的字节长度，以 Vertex 的内存大小 * 数组长度计算得出
+        length: vertices.count * MemoryLayout<Vertex>.stride
+    )!
     
     
     // MARK: - 加载 Shader
     let library = device.makeDefaultLibrary()!
+    
     // 顶点着色器
     let vertexFunctionDescriptor       = MTL4LibraryFunctionDescriptor()
     vertexFunctionDescriptor.library   = library
@@ -381,8 +418,17 @@ init(device: MTLDevice) throws {
     fragmentFunctionDescriptor.library = library
     fragmentFunctionDescriptor.name    = "fragment_main"
     
+    
+    // MARK: - 描述符 Descriptor
+    // 参数表
+    let argTableDescriptor = MTL4ArgumentTableDescriptor()
+    argTableDescriptor.maxBufferBindCount = 1 // 最多可以绑定一个 Buffer
+    self.argumentTable = try device.makeArgumentTable(descriptor: argTableDescriptor)
+    self.argumentTable.setAddress(vertexBuffer.gpuAddress, index: 0) // 将三角形顶点 Buffer 设为第 0 个 Buffer
+    
     super.init()
 }
+
 ```
 {% endtab %}
 {% endtabs %}
@@ -400,50 +446,52 @@ let pipelineState: MTLRenderPipelineState // 渲染管线状态
 {% tabs %}
 {% tab title="配置渲染管线状态" %}
 ```swift
-// MARK: - 渲染管线描述符
+// MARK: - 描述符 Descriptor
+// 渲染管线描述符
 let pipelineDescriptor = MTL4RenderPipelineDescriptor()
+pipelineDescriptor.vertexFunctionDescriptor        = vertexFunctionDescriptor
+pipelineDescriptor.fragmentFunctionDescriptor      = fragmentFunctionDescriptor
+pipelineDescriptor.vertexDescriptor                = vertexDescriptor
+pipelineDescriptor.colorAttachments[0].pixelFormat = .bgra8Unorm // 像素格式
 
-init(device: MTLDevice) throws {
-    // MARK: - 渲染管线描述符
-    let pipelineDescriptor = MTL4RenderPipelineDescriptor()
-    
-    // 使用的顶点着色器
-    pipelineDescriptor.vertexFunctionDescriptor        = vertexFunctionDescriptor
-    // 使用的片元着色器
-    pipelineDescriptor.fragmentFunctionDescriptor      = fragmentFunctionDescriptor
-    // 使用的顶点内存格式
-    pipelineDescriptor.vertexDescriptor                = vertexDescriptor
-    // 使用的颜色格式
-    pipelineDescriptor.colorAttachments[0].pixelFormat = .bgra8Unorm
-    
-    // 创建渲染管线状态
-    self.pipelineState = try device
-        .makeCompiler(descriptor: MTL4CompilerDescriptor())
-        .makeRenderPipelineState(descriptor: pipelineDescriptor)
-    
-    super.init()
-}
+
+// MARK: - 状态 State
+// 创建渲染管线状态
+self.pipelineState = try device
+    .makeCompiler(descriptor: MTL4CompilerDescriptor())
+    .makeRenderPipelineState(descriptor: pipelineDescriptor)
 ```
 {% endtab %}
 
 {% tab title="完整代码" %}
 ```swift
+
 class Renderer: NSObject, MTKViewDelegate {
     let device: MTLDevice                           // GPU 设备
+    
+    // MARK: - Command Queue
     let commandQueue: MTL4CommandQueue              // 命令队列
     let commandBuffer: MTL4CommandBuffer            // Metal 命令 Buffer
     let commandAllocator: MTL4CommandAllocator      // 命令分配器
-    let pipelineState: MTLRenderPipelineState       // 渲染管线状态
+    
+    // MARK: - Buffers
     let vertexBuffer: MTLBuffer                     // 顶点缓冲区
-    let vertexArgumentTable: MTL4ArgumentTable      // 顶点着色器参数表
+    
+    // MARK: - State
+    let pipelineState: MTLRenderPipelineState       // 渲染管线状态
+    let argumentTable: MTL4ArgumentTable            // 参数表
     
     init(device: MTLDevice) throws {
         self.device = device
+        
+        // MARK: - 配置命令队列 Command Queue
         self.commandQueue = device.makeMTL4CommandQueue()!
         self.commandBuffer = device.makeCommandBuffer()!
         self.commandAllocator = device.makeCommandAllocator()!
         
-        // MARK: - 描述内存布局
+        
+        // MARK: - 顶点描述符
+        // 描述顶点内存布局
         let vertexDescriptor = MTLVertexDescriptor()
         // 配置 position 属性
         vertexDescriptor.attributes[0].format = .float3 // 数据类型：3 个浮点数
@@ -461,14 +509,14 @@ class Renderer: NSObject, MTKViewDelegate {
         // vertexDescriptor.layouts[0].stepFunction = .perVertex            // 逐顶点处理
         
         
-        // MARK: - 设置参数表与 Buffer
+        // MARK: - 设置 Buffer
         // 使用三角形的顶点数组创建 Buffer
-        self.vertexBuffer = device.makeBuffer(bytes: vertices, length: vertices.count * MemoryLayout<Vertex>.stride, options: [])!
-        
-        let argTableDescriptor = MTL4ArgumentTableDescriptor()
-        argTableDescriptor.maxBufferBindCount = 1 // 最多可以绑定一个 Buffer
-        self.vertexArgumentTable = try device.makeArgumentTable(descriptor: argTableDescriptor)
-        vertexArgumentTable.setAddress(vertexBuffer.gpuAddress, index: 0)
+        self.vertexBuffer = device.makeBuffer(
+            // 传递给 GPU 的数据
+            bytes: vertices,
+            // 数据的字节长度，以 Vertex 的内存大小 * 数组长度计算得出
+            length: vertices.count * MemoryLayout<Vertex>.stride
+        )!
         
         
         // MARK: - 加载 Shader
@@ -485,14 +533,22 @@ class Renderer: NSObject, MTKViewDelegate {
         fragmentFunctionDescriptor.name    = "fragment_main"
         
         
-        // MARK: - 渲染管线描述符
+        // MARK: - 描述符 Descriptor
+        // 渲染管线描述符
         let pipelineDescriptor = MTL4RenderPipelineDescriptor()
         pipelineDescriptor.vertexFunctionDescriptor        = vertexFunctionDescriptor
         pipelineDescriptor.fragmentFunctionDescriptor      = fragmentFunctionDescriptor
         pipelineDescriptor.vertexDescriptor                = vertexDescriptor
-        pipelineDescriptor.colorAttachments[0].pixelFormat = .bgra8Unorm
-//        pipelineDescriptor.inputPrimitiveTopology          = .triangle
+        pipelineDescriptor.colorAttachments[0].pixelFormat = .bgra8Unorm // 像素格式
+//        pipelineDescriptor.inputPrimitiveTopology          = .triangle // 默认值
+        // 参数表
+        let argTableDescriptor = MTL4ArgumentTableDescriptor()
+        argTableDescriptor.maxBufferBindCount = 1 // 最多可以绑定一个 Buffer
+        self.argumentTable = try device.makeArgumentTable(descriptor: argTableDescriptor)
+        self.argumentTable.setAddress(vertexBuffer.gpuAddress, index: 0) // 将三角形顶点 Buffer 设为第 0 个 Buffer
         
+        
+        // MARK: - 状态 State
         // 创建渲染管线状态
         self.pipelineState = try device
             .makeCompiler(descriptor: MTL4CompilerDescriptor())
@@ -514,8 +570,11 @@ class Renderer: NSObject, MTKViewDelegate {
 在 `guard let renderEncoder`  与  `renderEncoder.endEncoding()` 之间添加真正要绘制的元素，将渲染管线
 
 ```swift
-// 使用渲染管线状态
+// MARK: - 设置渲染状态
 renderEncoder.setRenderPipelineState(pipelineState)
+// 传递顶点数据给 Shader
+renderEncoder.setArgumentTable(argumentTable, stages: .vertex)
+
 // 传递顶点数据给 Shader
 renderEncoder.setArgumentTable(vertexArgumentTable, stages: .vertex)
 ```

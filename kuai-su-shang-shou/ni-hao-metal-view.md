@@ -14,63 +14,55 @@ Metal View 封装了 Metal 渲染所需的基础设置，让你能够快速开�
 
 <details>
 
-<summary>MetalView.swift 完整代码</summary>
+<summary>MetalView 完整代码</summary>
 
+{% code title="MetalView.swift" %}
 ```swift
 import SwiftUI
 import MetalKit
 
 struct MetalView: ViewRepresentable {
-    // MARK: - Metal Device
-    private let device: MTLDevice
-    private let renderer: Renderer
+    let device: MTLDevice
+    let renderer: Renderer
     
     init() {
         guard let defaultDevice = MTLCreateSystemDefaultDevice() else {
             fatalError("Metal is not supported")
         }
         
-        // 检查 Metal 4 支持
-        guard defaultDevice.supportsFamily(.metal4) else {
+        guard defaultDevice.supportsFamily(.metal4) else {  // 检查是否支持 Metal 4
             fatalError("Metal 4 is not supported on this device")
         }
-        self.device = defaultDevice
         
+        device = defaultDevice
         do {
             self.renderer = try Renderer(device: device)
         } catch {
-            print("Failed to create Metal 4 renderer: \(error)")
-            fatalError("Failed to create Metal 4 renderer: \(error)")
+            fatalError("Error: \(error)")
         }
     }
     
-    // MARK: - 创建视图
 #if os(macOS)
     func makeNSView(context: Context) -> MTKView {
         return makeView()
     }
     
-    func updateNSView(_ nsView: MTKView, context: Context) {
-        // 更新逻辑
-    }
+    func updateNSView(_ nsView: MTKView, context: Context) {}
 #else
     func makeUIView(context: Context) -> MTKView {
         return makeView()
     }
     
-    func updateUIView(_ uiView: MTKView, context: Context) {
-        // 更新逻辑
-    }
+    func updateUIView(_ uiView: MTKView, context: Context) {}
 #endif
     
-    // 共享的视图创建逻辑
-    private func makeView() -> MTKView {
+    func makeView() -> MTKView {
         let mtkView = MTKView(frame: .zero, device: device)
-        // 配置渲染格式
-        mtkView.colorPixelFormat = .bgra8Unorm
         // 设置渲染器代理，分离 UI 和 Renderer
         mtkView.delegate = renderer
-        // 配置其他渲染属性
+        // 像素格式
+        mtkView.colorPixelFormat = .bgra8Unorm
+        // 清屏颜色
         mtkView.clearColor = MTLClearColor(red: 0.0, green: 0.0, blue: 0.0, alpha: 1.0)
         return mtkView
     }
@@ -80,16 +72,17 @@ struct MetalView: ViewRepresentable {
     MetalView()
 }
 ```
+{% endcode %}
 
 </details>
 
 #### 详细解读
 
-**常量定义**
+**属性定义**
 
 ```swift
-private let device: MTLDevice
-private let renderer: Renderer
+let device: MTLDevice
+let renderer: Renderer
 ```
 
 * MTLDevice 是 Metal 的核心对象，代表 GPU 设备，所有 Metal 操作都需要通过它进行
@@ -102,18 +95,16 @@ init() {
     guard let defaultDevice = MTLCreateSystemDefaultDevice() else {
         fatalError("Metal is not supported")
     }
-  
-    // 检查 Metal 4 支持
-    guard defaultDevice.supportsFamily(.metal4) else {
+
+    guard defaultDevice.supportsFamily(.metal4) else {  // 检查是否支持 Metal 4
         fatalError("Metal 4 is not supported on this device")
     }
-    self.device = defaultDevice
-  
+
+    device = defaultDevice
     do {
         self.renderer = try Renderer(device: device)
     } catch {
-        print("Failed to create Metal 4 renderer: \(error)")
-        fatalError("Failed to create Metal 4 renderer: \(error)")
+        fatalError("Error: \(error)")
     }
 }
 ```
@@ -122,9 +113,7 @@ init() {
 * **检查是否支持 Metal 4，本教程为 Metal 4 的教程，一定程度上与 Metal 3 存在差异**
 * Renderer 则是我们接下来会手动定义的渲染器本体，负责具体的渲染逻辑，这里先不用管
 
-**遵循协议**
-
-**处理平台兼容性**
+**遵循 ViewRepresentable 协议，处理平台兼容性**
 
 ```swift
 struct MetalView: ViewRepresentable {
@@ -132,18 +121,14 @@ struct MetalView: ViewRepresentable {
     func makeNSView(context: Context) -> MTKView {
         return makeView()
     }
-  
-    func updateNSView(_ nsView: MTKView, context: Context) {
-        // 更新逻辑
-    }
+    
+    func updateNSView(_ nsView: MTKView, context: Context) {}
 #else
     func makeUIView(context: Context) -> MTKView {
         return makeView()
     }
-  
-    func updateUIView(_ uiView: MTKView, context: Context) {
-        // 更新逻辑
-    }
+    
+    func updateUIView(_ uiView: MTKView, context: Context) {}
 #endif
 }
 ```
@@ -155,13 +140,13 @@ struct MetalView: ViewRepresentable {
 **创建 Metal View 视图**
 
 ```swift
-private func makeView() -> MTKView {
+func makeView() -> MTKView {
     let mtkView = MTKView(frame: .zero, device: device)
-    // 配置渲染格式
-    mtkView.colorPixelFormat = .bgra8Unorm
     // 设置渲染器代理，分离 UI 和 Renderer
     mtkView.delegate = renderer
-    // 配置其他渲染属性
+    // 像素格式
+    mtkView.colorPixelFormat = .bgra8Unorm
+    // 清屏颜色
     mtkView.clearColor = MTLClearColor(red: 0.0, green: 0.0, blue: 0.0, alpha: 1.0)
     return mtkView
 }
@@ -171,3 +156,5 @@ private func makeView() -> MTKView {
 * colorPixelFormat 设置颜色缓冲区格式，bgra8Unorm 是大多数设备都支持的标准格式
 * mtkView.delegate = renderer 将渲染器设置为代理，MTKView 会在需要渲染时自动调用渲染器的方法
 * clearColor 则是每次渲染前清屏的颜色，这里设置为纯黑色
+
+至此，点击运行，应该可以看见整个空着的 MetalView 了

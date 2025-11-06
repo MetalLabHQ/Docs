@@ -16,6 +16,8 @@ Command Allocator 将 GPU 渲染指令编码成 Command Buffer，存入队列 Co
 
 {% embed url="https://www.figma.com/board/cqxWW0vQcBEFE4aeIUC7i9/%E5%91%BD%E4%BB%A4%E7%BC%93%E5%86%B2%E4%B8%8E%E9%98%9F%E5%88%97?node-id=0-1&t=5BUXEGTgwYVQWDkl-1" %}
 
+**接下来要做什么？**
+
 {% stepper %}
 {% step %}
 ### 关联 Buffer 与 Allocator
@@ -58,8 +60,10 @@ class Renderer: NSObject, MTKViewDelegate {
     let commandBuffer: MTL4CommandBuffer            // Metal 命令 Buffer
     let commandAllocator: MTL4CommandAllocator      // 命令分配器
 
-    init(device: MTLDevice) throws {
+    init(device: MTLDevice) {
         self.device = device
+        
+        // MARK: - Command Queue
         self.commandQueue = device.makeMTL4CommandQueue()!
         self.commandBuffer = device.makeCommandBuffer()!
         self.commandAllocator = device.makeCommandAllocator()!
@@ -71,9 +75,7 @@ class Renderer: NSObject, MTKViewDelegate {
         
     }
     
-    func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
-        
-    }
+    func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {}
 }
 
 #Preview {
@@ -89,14 +91,16 @@ Draw 是每一帧都会执行的函数，在这里要创建出一个让 GPU 渲�
 func draw(in view: MTKView) {
     guard let drawable = view.currentDrawable else { return }
     
-    commandQueue.waitForDrawable(drawable)
-    commandAllocator.reset()
+    // MARK: - Begin Command Buffer
+    self.commandQueue.waitForDrawable(drawable)
+    self.commandAllocator.reset()
+    self.commandBuffer.beginCommandBuffer(allocator: commandAllocator)
     
-    commandBuffer.beginCommandBuffer(allocator: commandAllocator)
     
-    commandBuffer.endCommandBuffer()
-    commandQueue.commit([commandBuffer], options: nil)
-    commandQueue.signalDrawable(drawable)
+    // MARK: - End Command Buffer
+    self.commandBuffer.endCommandBuffer()
+    self.commandQueue.commit([commandBuffer], options: nil)
+    self.commandQueue.signalDrawable(drawable)
     drawable.present()
 }
 ```
@@ -122,13 +126,13 @@ mtl4RenderPassDescriptor.colorAttachments[0].loadAction = .clear
 mtl4RenderPassDescriptor.colorAttachments[0].clearColor  = MTLClearColor(red: 0.2, green: 0.2, blue: 0.25, alpha: 1.0)
 ```
 
-继续准备 **Render Command Encoder**，它用于录制渲染命令，这里将刚才的清屏操作录制
+继续准备 **Render Command Encoder**，它用于录制渲染命令，但我们啥也不录制
 
 ```swift
 guard let renderEncoder = commandBuffer.makeRenderCommandEncoder(descriptor: mtl4RenderPassDescriptor, options: MTL4RenderEncoderOptions()) else { return }
 renderEncoder.endEncoding()
 ```
 
-至此，点击运行应该能看见一个纯色的背景了。
+至此，点击运行应该能看见一个清屏颜色的背景了。
 
 延伸阅读：[ming-ling-dui-lie-command-queue](../ming-ling-dui-lie-command-queue/ "mention")

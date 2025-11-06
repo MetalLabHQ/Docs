@@ -26,6 +26,7 @@ Hello Cube 工程将三角形的三个顶点坐标变成立方体所需要的24�
 
 <summary>顶点数组</summary>
 
+{% code title="Vertex.swift" %}
 ```swift
 let vertices: [Vertex] = [
     // 前面
@@ -65,6 +66,7 @@ let vertices: [Vertex] = [
     Vertex(position: SIMD3<Float>( 0.5, -0.5, -0.5), color: SIMD4<Float>(0.0, 1.0, 1.0, 1.0)),
 ]
 ```
+{% endcode %}
 
 </details>
 
@@ -72,6 +74,7 @@ let vertices: [Vertex] = [
 
 <summary>索引数组</summary>
 
+{% code title="Vertex.swift" %}
 ```swift
 // 正方体索引数组，每6个顶点定义一个面（两个三角形）
 let indices: [UInt32] = [
@@ -89,6 +92,7 @@ let indices: [UInt32] = [
     20, 21, 22, 20, 22, 23
 ]
 ```
+{% endcode %}
 
 </details>
 
@@ -183,6 +187,7 @@ Models 下创建 Camera.swift，定义出相机的位置与姿态
 
 <summary>Camera.swift</summary>
 
+{% code title="Camera.swift" %}
 ```swift
 import simd
 
@@ -195,6 +200,7 @@ struct Camera {
     var up: SIMD3<Float>
 }
 ```
+{% endcode %}
 
 </details>
 
@@ -224,7 +230,10 @@ struct Camera {
 
 <summary>LookAt.swift</summary>
 
+{% code title="LookAt.swift" %}
 ```swift
+import simd
+
 /// 视图矩阵 View Matrix
 /// - Parameters:
 ///   - eye: 相机的位置
@@ -233,9 +242,9 @@ struct Camera {
 /// - Returns: 视图矩阵 View Matrix
 func lookAt(eye: SIMD3<Float>, center: SIMD3<Float>, up: SIMD3<Float>) -> float4x4 {
     /// **计算相机的前方向 (相机朝向的方向)**
-    /// `eye - center` 得到从相机位置 `eye` 指向目标点 `center` 的方向向量
-    /// `normalize(eye - center)` 让它变成单位向量，保证方向正确但长度为 1
-    let zAxis = normalize(eye - center)
+    /// `center - eye` 得到从相机位置 `eye` 指向目标点 `center` 的方向向量
+    /// `normalize(center - eye)` 让它变成单位向量，保证方向正确但长度为 1
+    let zAxis = normalize(center - eye)
     
     /// **计算相机的右方向 (X 轴)**
     /// `cross(up, zAxis)` 计算出一个**垂直于 `up` 和 `zAxis` 的向量**，表示相机的右方向
@@ -267,6 +276,7 @@ func lookAt(eye: SIMD3<Float>, center: SIMD3<Float>, up: SIMD3<Float>) -> float4
 //    ])
 }
 ```
+{% endcode %}
 
 </details>
 
@@ -323,6 +333,7 @@ $$
 
 同时归一化到 [gui-yi-hua-she-bei-kong-jian-ndcnormalized-device-coordinates.md](../kong-jian-zuo-biao-xi/gui-yi-hua-she-bei-kong-jian-ndcnormalized-device-coordinates.md "mention") 空间
 
+{% code title="Perspective.swift" %}
 ```swift
 import simd
 
@@ -331,17 +342,18 @@ func perspective(aspect: Float, fovy: Float, near: Float, far: Float) -> float4x
     let yScale = 1 / tan(fovy * 0.5)
     let xScale = yScale / aspect
     let zRange = far - near
-    let zScale = -(far + near) / zRange
-    let wzScale = -2 * far * near / zRange
+    let zScale = far / zRange
+    let wzScale = zScale * -near
     
     return float4x4(
         SIMD4<Float>(xScale, 0,      0,  0),
         SIMD4<Float>(0,      yScale, 0,  0),
-        SIMD4<Float>(0,      0,      zScale, -1),
+        SIMD4<Float>(0,      0,      zScale, 1),
         SIMD4<Float>(0,      0,      wzScale, 0)
     )
 }
 ```
+{% endcode %}
 
 </details>
 
@@ -359,6 +371,7 @@ func perspective(aspect: Float, fovy: Float, near: Float, far: Float) -> float4x
 
 <summary>Common.h</summary>
 
+{% code title="Common.h" %}
 ```cpp
 #import <simd/simd.h>
 
@@ -366,6 +379,7 @@ typedef struct {
     matrix_float4x4 mvpMatrix; // MVP 矩阵
 } Uniforms;
 ```
+{% endcode %}
 
 </details>
 
@@ -375,8 +389,7 @@ typedef struct {
 var uniformsBuffer: MTLBuffer // Uniforms 缓冲区
 
 self.uniformsBuffer = device.makeBuffer(
-    length: MemoryLayout<Uniforms>.size,
-    options: .storageModeShared
+    length: MemoryLayout<Uniforms>.size
 )!
 ```
 
@@ -394,20 +407,20 @@ self.uniformsBuffer = device.makeBuffer(
 
 修改参数表部分，把 Uniforms Buffer 传递过去：
 
-```swift
+<pre class="language-swift"><code class="lang-swift">// 参数表
 let argTableDescriptor = MTL4ArgumentTableDescriptor()
-argTableDescriptor.maxBufferBindCount = 2
-self.vertexArgumentTable = try device.makeArgumentTable(descriptor: argTableDescriptor)
-vertexArgumentTable.setAddress(vertexBuffer.gpuAddress, index: 0)
-vertexArgumentTable.setAddress(uniformsBuffer.gpuAddress, index: 1)
-```
+<strong>argTableDescriptor.maxBufferBindCount = 2 // 最多可以绑定两个 Buffer
+</strong>self.argumentTable = try device.makeArgumentTable(descriptor: argTableDescriptor)
+self.argumentTable.setAddress(vertexBuffer.gpuAddress, index: 0) // 将三角形顶点 Buffer 设为第 0 个 Buffer
+self.argumentTable.setAddress(uniformsBuffer.gpuAddress, index: 1) // 将 uniformsBuffer 设为第 1 个 Buffer
+</code></pre>
 
 #### 开始计算 Uniforms
 
 先在 Renderer 里准备一个 Camera，参数可以自己写
 
 ```swift
-var camera = Camera(
+let camera = Camera(
     position: SIMD3<Float>(2, 2, 3),
     target: SIMD3<Float>(0, 0, 0),
     up: SIMD3<Float>(0, 1, 0)
