@@ -1,8 +1,7 @@
 # Table of contents
 
 * [关于 Metal Lab](README.md)
-* [Metal](metal.md)
-* [Metal 4 核心 API](metal-4-he-xin-api.md)
+* [我需要什么？](wo-xu-yao-shen-me.md)
 
 ## 快速上手
 
@@ -12,6 +11,7 @@
 * [你好，三角形](kuai-su-shang-shou/ni-hao-san-jiao-xing.md)
 * [你好，Cube](kuai-su-shang-shou/ni-hao-cube.md)
 * [深度测试](kuai-su-shang-shou/shen-du-ce-shi.md)
+* [加载模型](kuai-su-shang-shou/jia-zai-mo-xing.md)
 
 ## 光栅化流程
 
@@ -42,6 +42,7 @@
   * [MTKView](metalview/mtkview.md)
   * [跨平台兼容](metalview/kua-ping-tai-jian-rong.md)
 * [MTLBuffer](mtlbuffer.md)
+* [Metal 4 核心 API](metal-4-he-xin-api.md)
 * [深度比较函数 MTLCompareFunction](shen-du-bi-jiao-han-shu-mtlcomparefunction.md)
 * [多平台兼容 ViewRepresentable](duo-ping-tai-jian-rong-viewrepresentable.md)
 * [Swift 调用 .h 头文件](swift-diao-yong-.h-tou-wen-jian.md)

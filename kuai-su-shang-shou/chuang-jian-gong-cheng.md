@@ -45,6 +45,4 @@ typealias PlatformColor = UIColor
 
 这里的 **`typealias`** 是类似 C 语言中 **`typedef`** 的用法，给一个类型起一个别名来实现跨平台的应用开发。
 
-* [x] TODO 插入图片
-
 运行当前项目，如果屏幕中央就会出现 Hello, world! 那么恭喜你创建了自己的第一个窗口！

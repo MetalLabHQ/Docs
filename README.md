@@ -4,8 +4,6 @@ description: Hello, Metal.
 
 # 关于 Metal Lab
 
-### Metal Lab 是什么？
-
 **Metal Lab 是基于 Apple Metal API 生态的中文图形学社区**，致力于推进 Metal 图形学生态，为初学者提供一个学习的方向
 
 Metal Lab 上大部分内容引用自 [Apple Metal 文档](https://developer.apple.com/documentation/metal)、Games 101、RTR4 等教程。
@@ -20,7 +18,7 @@ Metal Lab 上大部分内容引用自 [Apple Metal 文档](https://developer.app
 
 ### 为什么要学习 Metal？
 
-你可能会问：“为什么我要学习 Metal 而不是 OpenGL 或 Vulkan？” 其实，**Metal 是苹果公司专门为自己的硬件平台设计的图形和计算 API**，它不仅为开发者提供了更直接的硬件控制能力，还巧妙地在底层与高层之间找到了一个很好的平衡点。
+**Metal 是苹果公司专门为自己的硬件平台设计的图形和计算 API**，它不仅为开发者提供了更直接的硬件控制能力，还巧妙地在底层与高层之间找到了一个很好的平衡点。
 
 和 OpenGL 相比，Metal 的渲染命令更加直观、简洁，**它让你能以更低的抽象层级接触 GPU**，从而获得更高的性能和更精细的控制。而与 Vulkan 相比，Metal 又没有那种“过度封装”的感觉，虽然它比 Vulkan 稍高一层，但依然保持着极高的灵活性和效率。
 

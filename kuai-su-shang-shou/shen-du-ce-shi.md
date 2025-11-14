@@ -55,13 +55,13 @@ pipelineDescriptor.isRasterizationEnabled = true
 来到 Renderer.swif，定义深度测试状态
 
 ```swift
-var depthState: MTLDepthStencilState
+let depthState: MTLDepthStencilState
 ```
 
 在 init 初始化中，创建深度测试
 
 ```swift
-// MARK: - 深度模板描述符
+// 深度模板描述符
 let depthStateDescriptor = MTLDepthStencilDescriptor()
 depthStateDescriptor.depthCompareFunction = .less
 depthStateDescriptor.isDepthWriteEnabled = true
