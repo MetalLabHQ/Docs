@@ -1,6 +1,7 @@
 # Table of contents
 
 * [关于 Metal Lab](README.md)
+* [防走丢](fang-zou-diu.md)
 * [我需要什么？](wo-xu-yao-shen-me.md)
 
 ## 快速上手
@@ -38,9 +39,12 @@
   * [命令编码器 Command Encoder](ming-ling-dui-lie-command-queue/ming-ling-bian-ma-qi-command-encoder.md)
   * [命令缓冲区 Command Buffer](ming-ling-dui-lie-command-queue/ming-ling-huan-chong-qu-command-buffer.md)
   * [命令分配器 Command Allocator](ming-ling-dui-lie-command-queue/ming-ling-fen-pei-qi-command-allocator.md)
+* [Model I/O](model-i-o.md)
 * [MetalView](metalview/README.md)
   * [MTKView](metalview/mtkview.md)
   * [跨平台兼容](metalview/kua-ping-tai-jian-rong.md)
+* [3D 文件格式速查](3d-wen-jian-ge-shi-su-cha/README.md)
+  * [.obj](3d-wen-jian-ge-shi-su-cha/.obj.md)
 * [MTLBuffer](mtlbuffer.md)
 * [Metal 4 核心 API](metal-4-he-xin-api.md)
 * [深度比较函数 MTLCompareFunction](shen-du-bi-jiao-han-shu-mtlcomparefunction.md)
