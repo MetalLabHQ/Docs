@@ -2,7 +2,7 @@
 
 完整代码：
 
-
+{% embed url="https://github.com/MetalLabHQ/LoadAssets.git" %}
 
 本章节会教你如何真正的加载一个模型，
 
@@ -67,9 +67,9 @@ class Entity {
 ```
 {% endcode %}
 
-从前面的学习，我们了解到模型是由一个个顶点组成多个三角面来绘制在屏幕上的，而对于模型而言，这样一个连接起来的模型称为一个 Mesh（网格）
+从前面的学习，我们了解到模型是由一个个顶点组成多个三角面来绘制在屏幕上的，而对于模型而言，这样一个连接起来的模型称为一个 Mesh（网格），创建 Mesh.swift
 
-{% code title="Entity.swift" %}
+{% code title="Mesh.swift" %}
 ```swift
 struct Mesh {
     var vertexBuffers: [MTLBuffer]
@@ -97,10 +97,8 @@ struct Submesh {
 ```
 {% endcode %}
 
-使用苹果开发等 Model I/O Framework，可以轻松读取行业通用的模型格式，转换为 MDLAssets，节省了手动解析模型的时间，创建 Module 文件夹并创建 AssetsLoader.swift 文件，有兴趣可以自己手动使用 printAssetInfo 来查看模型内部结构，也可以放一些你自己的模型格式进去试试
+使用苹果开发等 Model I/O Framework，可以轻松读取行业通用的模型格式，转换为 MDLAssets，节省了手动解析模型的时间，创建 Module 文件夹并创建 AssetsLoader.swift 文件
 
-{% tabs %}
-{% tab title="loadAssets" %}
 {% code title="AssetsLoader.swift" %}
 ```swift
 enum AssetsLoader {
@@ -125,9 +123,9 @@ enum AssetsLoader {
 }
 ```
 {% endcode %}
-{% endtab %}
 
-{% tab title="printAssetInfo" %}
+**可选：**&#x53EF;以添加 printAssetInfo 来查看模型内部结构，也可以放一些你自己的模型格式进去试试
+
 {% code title="AssetsLoader.swift" expandable="true" %}
 ```swift
 import MetalKit
@@ -296,8 +294,174 @@ extension MDLVertexFormat {
 }
 ```
 {% endcode %}
-{% endtab %}
-{% endtabs %}
 
+#### 检查模型
 
+通过调用 `printAssetInfo` 可以得到模型的一些简单信息，由于 obj 是一个简单的模型格式，他并没有附带太多复杂信息：
 
+{% code title="打印结果" %}
+```
+========== Asset Info ==========
+  bounding_box:
+    min: [-3.425380, -3.199893, -3.451686]
+    max: [3.425380, 3.199887, 3.451694]
+    extent: [6.850760, 6.399780, 6.903380]
+
+objects:
+> name: "Mesh1_Model.005_FrontColor.002"
+  type: MDLMesh
+  mesh:
+    vertex_count: 180
+    submesh_count: 1
+    bounding_box:
+      min: [-3.425380, -3.199893, -3.451686]
+      max: [3.425380, 3.199887, 3.451694]
+    vertex_attributes:
+      buffer[0] (stride: 32 bytes):
+        - name: "position"
+          format: "Float3"
+          offset: 0
+        - name: "normal"
+          format: "Float3"
+          offset: 12
+        - name: "textureCoordinate"
+          format: "Float2"
+          offset: 24
+```
+{% endcode %}
+
+从打印结果来看，可以得出一些信息：
+
+* 这个模型只有一个 Mesh，该 Mesh 含有 180 个顶点 vertex\_count，但这并不符合「截角二十面体有60个顶点」的几何性质
+* 这个 Mesh 有三个顶点属性，分别是 position, normal, textureCoordinate，也输出了他们对应的格式和 offset
+
+这也就说明，这里使用了 「**交错顶点属性 Interleaved Vertex Attributes**」 的方式传递几何数据，交替性的存储 position, normal, textureCoordinate，在内存中它是这样的：
+
+<table data-full-width="true"><thead><tr><th width="90.0546875">Vertex</th><th width="160.11328125">Attribute</th><th width="99.55078125">Format</th><th width="89.89453125" data-type="number">Offset</th><th width="79.42578125" data-type="number">Size</th><th>Data</th></tr></thead><tbody><tr><td><strong>0</strong></td><td>position</td><td>Float3</td><td>0</td><td>12</td><td><code>(x₀, y₀, z₀)</code></td></tr><tr><td><strong>0</strong></td><td>normal</td><td>Float3</td><td>12</td><td>12</td><td><code>(nx₀, ny₀, nz₀)</code></td></tr><tr><td><strong>0</strong></td><td>textureCoordinate</td><td>Float2</td><td>24</td><td>8</td><td><code>(u₀, v₀)</code></td></tr><tr><td><strong>1</strong></td><td>position</td><td>Float3</td><td>32</td><td>12</td><td><code>(x₁, y₁, z₁)</code></td></tr><tr><td><strong>1</strong></td><td>normal</td><td>Float3</td><td>44</td><td>12</td><td><code>(nx₁, ny₁, nz₁)</code></td></tr><tr><td><strong>1</strong></td><td>textureCoordinate</td><td>Float2</td><td>56</td><td>8</td><td><code>(u₁, v₁)</code></td></tr><tr><td><strong>2</strong></td><td>position</td><td>Float3</td><td>64</td><td>12</td><td><code>(x₂, y₂, z₂)</code></td></tr><tr><td><strong>2</strong></td><td>normal</td><td>Float3</td><td>76</td><td>12</td><td><code>(nx₂, ny₂, nz₂)</code></td></tr><tr><td><strong>2</strong></td><td>textureCoordinate</td><td>Float2</td><td>88</td><td>8</td><td><code>(u₂, v₂)</code></td></tr></tbody></table>
+
+将三个顶点数据，依次作为 position, normal, textureCoordinate，然后通过 offset 来决定取值的起点，在通过 size 得到取值的范围，将三个顶点数据看做一个顶点，这样就解释了为什么有 180 个顶点数据。
+
+是不是很耳熟？其实在 [#nei-cun-bu-ju](ni-hao-san-jiao-xing.md#nei-cun-bu-ju "mention")中，我们就已经实践过了！
+
+#### 修改渲染管线
+
+来到 Renderer
+
+1. 准备一个 entities 属性，并在初始化的时候加入
+2. 使用 AssetsLoader 加载 obj 模型，并且将其转换成我们定义的 Entity
+3. 用 `MTKMetalVertexDescriptorFromModelIO` 直接创建的顶点描述，作为渲染管线的顶点描述
+
+> 目前出于教学才直接使用模型的顶点描述作为渲染管线的顶点描述，真正的渲染引擎会设计一套规范，为缺失的属性补上默认值
+
+{% code title="Renderer.swift" %}
+```swift
+class Renderer: NSObject, MTKViewDelegate {
+    var entities: [Entity] = []
+    
+    init(device: MTLDevice) throws {
+        self.device = device
+        
+        // MARK: - Command Queue
+        self.commandQueue = device.makeMTL4CommandQueue()!
+        self.commandBuffer = device.makeCommandBuffer()!
+        self.commandAllocator = device.makeCommandAllocator()!
+        
+        let asset = AssetsLoader.loadAssets(named: "truncated icosahedron", ext: "obj", device: device)!
+        for i in 0..<asset.count {
+            let object = asset.object(at: i)
+            entities.append(Entity(object: object, device: device))
+        }
+        
+        let vertexDescriptor = MTKMetalVertexDescriptorFromModelIO(asset.vertexDescriptor!)!
+        
+        // MARK: - Descriptor
+        pipelineDescriptor.vertexDescriptor = vertexDescriptor
+    }
+}
+```
+{% endcode %}
+
+准备一个 renderEntity 函数：
+
+{% code title="Renderer.swift" %}
+```swift
+func renderEntity(_ entity: Entity, renderEncoder: MTL4RenderCommandEncoder) {
+    for mesh in entity.meshes {
+        guard !mesh.vertexBuffers.isEmpty else { continue }
+        
+        argumentTable.setAddress(mesh.vertexBuffers[0].gpuAddress, index: 0)
+        
+        for submesh in mesh.submeshes {
+                renderEncoder.drawIndexedPrimitives(
+                primitiveType: .triangle,
+                indexCount: submesh.indexCount,
+                indexType: submesh.indexType,
+                indexBuffer: submesh.indexBuffer.gpuAddress,
+                indexBufferLength: submesh.indexBuffer.length
+            )
+        }
+    }
+}
+```
+{% endcode %}
+
+来到 `draw()` 函数，在 draw 部分调用函数：
+
+{% code title="Renderer.swift" %}
+```swift
+func draw(in view: MTKView) {
+    // MARK: - Draw
+    for entity in entities {
+        renderEntity(entity, renderEncoder: renderEncoder)
+    }
+}
+```
+{% endcode %}
+
+#### 用 Normal 上色
+
+在上面 [#jian-cha-mo-xing](jia-zai-mo-xing.md#jian-cha-mo-xing "mention")中，我们得知模型除了 position 以外，还有个 normal 和 textureCoordinate，他们具体的作用我们会在后面的章节中讨论，此处我们只是简单的使用 normal 去替换掉本没有的 color：
+
+{% code title="Shaders.metal" %}
+```cpp
+#import "Common.h"
+
+struct VertexIn {
+    float3 position [[attribute(0)]];
+    float3 normal [[attribute(1)]];
+};
+
+struct VertexOut {
+    float4 position [[position]];
+    float3 normal;
+};
+
+vertex VertexOut vertex_main(VertexIn in [[stage_in]], constant Uniforms &uniforms [[buffer(1)]])
+{
+    VertexOut out;
+    
+    out.position = uniforms.mvpMatrix * float4(in.position, 1.0);
+    out.normal = in.normal;
+    
+    return out;
+}
+
+fragment float4 fragment_main(VertexOut in [[stage_in]]) {
+    return float4(in.normal * 0.5 + 0.5, 1.0);
+}
+```
+{% endcode %}
+
+但要记住，normal 绝对不是 color，虽然他在渲染的过程会间接影响颜色，但此处我们仅仅只是将该数据当作 color 用<mark style="color:$info;">（把它的数据当作 color 的 rgb，然后 alpha 通道保持为 1.0）</mark>
+
+最后运行工程，你应该可以看见这个截角二十面体了，试着玩一玩 camera 的坐标，尝试从各种角度观察它：
+
+{% code title="Renderer.swift" %}
+```swift
+let camera = Camera(
+    position: SIMD3<Float>(0, 5, 5),
+    target: SIMD3<Float>(0, 0, 0),
+    up: SIMD3<Float>(0, 1, 0)
+)
+```
+{% endcode %}
