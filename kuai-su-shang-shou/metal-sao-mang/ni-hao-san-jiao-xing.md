@@ -14,11 +14,11 @@ description: Hello, Triangle.
 
 绘制三角形是图形学中的的经典课程，其中经常能见到一些梗图（指花了一下午时间学习了使用图形 API 绘制出第一个三角形，然后放弃）
 
-<figure><img src="../.gitbook/assets/ I Know OpenGL.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/ I Know OpenGL.png" alt=""><figcaption></figcaption></figure>
 
 不过在这之前，先整理一下文件结构方便后续开发，将文件进行归类，下载该工程作为起点：
 
-{% file src="../.gitbook/assets/HelloTriangle.7z" %}
+{% file src="../../.gitbook/assets/HelloTriangle.7z" %}
 初始工程
 {% endfile %}
 
@@ -26,11 +26,11 @@ description: Hello, Triangle.
 
 #### 开始准备数据结构
 
-在 Models 路径下创建 Vertex.swift 作为顶点坐标数据结构，使用 `SIMD3<Float>` 表示 position 是长度为 3 的定长 Float 数组，SIMD 详情：[simd-shu-ju-jie-gou.md](../xiao-zhi-shi-dian/simd-shu-ju-jie-gou.md "mention")
+在 Models 路径下创建 Vertex.swift 作为顶点坐标数据结构，使用 `SIMD3<Float>` 表示 position 是长度为 3 的定长 Float 数组，SIMD 详情：[simd-shu-ju-jie-gou.md](../../xiao-zhi-shi-dian/simd-shu-ju-jie-gou.md "mention")
 
 绘制三角形只需要知道三个顶点的坐标和颜色。
 
-<img src="../.gitbook/assets/三角形的三个顶点位置.svg" alt="三角形的三个顶点在坐标系中的样子" class="gitbook-drawing">
+<img src="../../.gitbook/assets/三角形的三个顶点位置.svg" alt="三角形的三个顶点在坐标系中的样子" class="gitbook-drawing">
 
 用 SIMD3 创建 position 的 xyz 坐标，用 SIMD4 创建 color 的 rgba 颜色值（a为透明度，即 Alpha 通道）
 

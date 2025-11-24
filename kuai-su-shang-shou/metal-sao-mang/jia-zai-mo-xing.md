@@ -4,11 +4,11 @@
 
 {% embed url="https://github.com/MetalLabHQ/LoadAssets.git" %}
 
-本章节会教你如何真正的加载一个模型，
+本章节会教你如何真正的加载一个模型
 
 下载该工程作为起点：
 
-{% file src="../.gitbook/assets/LoadAssets.7z" %}
+{% file src="../../.gitbook/assets/LoadAssets.7z" %}
 初始工程
 {% endfile %}
 
@@ -20,9 +20,9 @@
 
 #### 准备 3D 模型
 
-我们需要一个能渲染的模型，截角二十面体，下载该文件并放入 Assets 文件夹：
+我们需要一个能渲染的模型：「截角二十面体」，下载该文件并放入 Assets 文件夹：
 
-{% file src="../.gitbook/assets/truncated icosahedron.obj" %}
+{% file src="../../.gitbook/assets/truncated icosahedron.obj" %}
 
 <details>
 
@@ -32,7 +32,7 @@
 
 </details>
 
-这是一个 obj 文件，这是最基本的 3D 文件格式，省去了我们手动定义顶点的时间，并且它也能携带一些少量信息如法线、纹理坐标等，详情见 [.obj.md](../3d-wen-jian-ge-shi-su-cha/.obj.md "mention")
+这是一个 obj 文件，这是最基本的 3D 文件格式，省去了我们手动定义顶点的时间，并且它也能携带一些少量信息如法线、纹理坐标等，详情见 [.obj.md](../../3d-wen-jian-ge-shi-su-cha/.obj.md "mention")
 
 #### 加载模型
 
@@ -459,7 +459,7 @@ fragment float4 fragment_main(VertexOut in [[stage_in]]) {
 {% code title="Renderer.swift" %}
 ```swift
 let camera = Camera(
-    position: SIMD3<Float>(0, 5, 5),
+    position: SIMD3<Float>(0, 10, 10),
     target: SIMD3<Float>(0, 0, 0),
     up: SIMD3<Float>(0, 1, 0)
 )

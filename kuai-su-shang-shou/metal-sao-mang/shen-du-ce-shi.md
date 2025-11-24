@@ -6,17 +6,17 @@
 
 下载该工程作为起点：
 
-{% file src="../.gitbook/assets/DepthTest.7z" %}
+{% file src="../../.gitbook/assets/LoadAssets.7z" %}
 
 在上一章节，似乎在可见性上出了一些问题？与我们预期中看到的立方体不太一样？
 
-<figure><img src="../.gitbook/assets/没有处理遮挡关系的 Cube.png" alt="" width="375"><figcaption><p>没有进行深度测试</p></figcaption></figure>
+<figure><img src="../../.gitbook/assets/没有处理遮挡关系的 Cube.png" alt="" width="375"><figcaption><p>没有进行深度测试</p></figcaption></figure>
 
 似乎它的绘制顺序不太对？好像这个立方体没有正面，然后黄色的面被底面挡住了。
 
 这是因为它的绘制顺序是完全基于传递的 index，后绘制的三角形会直接改在先前的三角形上，用一个图来直观的感受绘制顺序错误：
 
-<img src="../.gitbook/assets/深度测试错误画家算法的立方体.svg" alt="同样的立方体，但不同的绘制顺序" class="gitbook-drawing">
+<img src="../../.gitbook/assets/深度测试错误画家算法的立方体.svg" alt="同样的立方体，但不同的绘制顺序" class="gitbook-drawing">
 
 我们告诉了 GPU 要如何按顺序绘制成一个立方体，但由于视角会发生变化，我们并不能定义出绝对的「前面」与「后面」，这时候需要从相机视角出发，让距离三角形更近的三角形代&#x8868;**「前面」**，更远的代&#x8868;**「后面」**
 
@@ -30,7 +30,7 @@
 
 在图形学中，我们将连续的三角形称为**图元 Primitive**，而经过光栅化后变为一堆像素组成的片元 Fragment，可以通过下图直观感受他们的区别：
 
-<img src="../.gitbook/assets/图元通过光栅化变为片元.svg" alt="图元 Primitive（左图）经过光栅化变为片元 Fragment（右图）" class="gitbook-drawing">
+<img src="../../.gitbook/assets/图元通过光栅化变为片元.svg" alt="图元 Primitive（左图）经过光栅化变为片元 Fragment（右图）" class="gitbook-drawing">
 
 <details>
 
@@ -79,4 +79,4 @@ renderEncoder.setDepthStencilState(depthState)
 
 得到了我们最终预期的立方体，舒服了
 
-<figure><img src="../.gitbook/assets/绘制深度测试后立方体.png" alt="" width="375"><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/绘制深度测试后立方体.png" alt="" width="375"><figcaption></figcaption></figure>

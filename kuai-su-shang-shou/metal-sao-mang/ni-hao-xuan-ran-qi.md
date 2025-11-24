@@ -135,4 +135,4 @@ renderEncoder.endEncoding()
 
 至此，点击运行应该能看见一个清屏颜色的背景了。
 
-延伸阅读：[ming-ling-dui-lie-command-queue](../ming-ling-dui-lie-command-queue/ "mention")
+延伸阅读：[ming-ling-dui-lie-command-queue](../../ming-ling-dui-lie-command-queue/ "mention")

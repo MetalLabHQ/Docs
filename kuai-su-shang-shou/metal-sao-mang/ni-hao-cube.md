@@ -10,7 +10,7 @@ description: More Triangle!
 
 本章节会带你理解光栅化渲染流程，从而了解 3D 模型是如何通过数学计算变换到屏幕像素上的，需要下载该工程作为起点：
 
-{% file src="../.gitbook/assets/HelloCube.7z" %}
+{% file src="../../.gitbook/assets/HelloCube.7z" %}
 初始工程
 {% endfile %}
 
@@ -139,7 +139,7 @@ A: 因为在当前案例中，我们希望这个立方体的每个面拥有不�
 
 A: 在绘制三角形章节中，由于绘制一个三角形，顺序并不重要，但绘制多面体的话例如当前的立方体，需要明确哪两个三角形连接成立方体的一个面，否则就会出现下面的现象：
 
-<figure><img src="../.gitbook/assets/没有指定绘制顺序的立方体.png" alt="" width="375"><figcaption><p>不明确绘制顺序的立方体，你别说还挺酷的</p></figcaption></figure>
+<figure><img src="../../.gitbook/assets/没有指定绘制顺序的立方体.png" alt="" width="375"><figcaption><p>不明确绘制顺序的立方体，你别说还挺酷的</p></figcaption></figure>
 
 </details>
 
@@ -149,13 +149,13 @@ $$
 (\pm0.5, \pm0.5)^3
 $$
 
-<img src="../.gitbook/assets/立方体的八个顶点坐标.svg" alt="" class="gitbook-drawing">
+<img src="../../.gitbook/assets/立方体的八个顶点坐标.svg" alt="" class="gitbook-drawing">
 
 > Metal 视图空间中，相机始终看向 +Z 方向
 
 运行工程，应该能见到这样的画面
 
-<div><figure><img src="../.gitbook/assets/HelloCube 未收到预期画面.png" alt=""><figcaption></figcaption></figure> <figure><img src="../.gitbook/assets/绘制深度测试后立方体.png" alt=""><figcaption></figcaption></figure></div>
+<div><figure><img src="../../.gitbook/assets/HelloCube 未收到预期画面.png" alt=""><figcaption></figcaption></figure> <figure><img src="../../.gitbook/assets/绘制深度测试后立方体.png" alt=""><figcaption></figcaption></figure></div>
 
 似乎不太对劲？和我们期望看到的画面不一样，而右图才是我们希望看见的样子。
 
@@ -212,11 +212,11 @@ struct Camera {
 
 但所有物体都会因为与相机的相对位置不变，所以相机看到的内容是一样的
 
-<img src="../.gitbook/assets/视图变换相对关系示意图.svg" alt="变换至原点示意图" class="gitbook-drawing">
+<img src="../../.gitbook/assets/视图变换相对关系示意图.svg" alt="变换至原点示意图" class="gitbook-drawing">
 
 从三维视角来看是这样的：
 
-<img src="../.gitbook/assets/视图变换示意图.svg" alt="通过视图矩阵，将世界空间变换至视图空间" class="gitbook-drawing">
+<img src="../../.gitbook/assets/视图变换示意图.svg" alt="通过视图矩阵，将世界空间变换至视图空间" class="gitbook-drawing">
 
 在这里并没有发生任何真实的位移，只是因为坐标空间从**世界空间**转换为**视图空间**（相机空间），所以才会使坐标发生变化，相当于更换了参考系。
 
@@ -260,13 +260,13 @@ func lookAt(eye: SIMD3<Float>, target: SIMD3<Float>, up: SIMD3<Float>) -> float4
 
 熟悉美术的同学应该知道**透视**这个概念，即三维物体在二维平面上，以近大远小的方式呈现出纵深感
 
-而在图形学中，这种行为称为 [tou-ying-projection](../guang-shan-hua-liu-cheng/mvp-ju-zhen-modelviewprojection/tou-ying-projection/ "mention")
+而在图形学中，这种行为称为 [tou-ying-projection](../../guang-shan-hua-liu-cheng/mvp-ju-zhen-modelviewprojection/tou-ying-projection/ "mention")
 
-<figure><img src="../.gitbook/assets/透视与正交投影区别.png" alt="" width="375"><figcaption><p>左侧为正交投影 Orthographic，右侧为透视投影 Perspective</p></figcaption></figure>
+<figure><img src="../../.gitbook/assets/透视与正交投影区别.png" alt="" width="375"><figcaption><p>左侧为正交投影 Orthographic，右侧为透视投影 Perspective</p></figcaption></figure>
 
 通过定义 **近平面 Near** 与 **远平面 Far**，就能确立投影的可视空间，对于透视投影而言，可视空间就像一个被去了顶的金字塔，称为 **视椎体 Furstum**
 
-<figure><img src="../.gitbook/assets/Frustum&#x26;Cuboid.png" alt="" width="375"><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/Frustum&#x26;Cuboid.png" alt="" width="375"><figcaption></figcaption></figure>
 
 而接下来要求的投影矩阵，则是将左图中整个 Frustum，挤压成右图 Cuboid 的形状，我需要你想象一下这个画面：
 
@@ -278,11 +278,11 @@ func lookAt(eye: SIMD3<Float>, target: SIMD3<Float>, up: SIMD3<Float>) -> float4
 
 从一个更好理解的角度看，也就是二维空间去理&#x89E3;**「挤压」**&#x884C;为，假设(x', y', z') 为上图中的 Frustum 的 **近平面「上边」** 的点，(x, y, z) 为 **远平面「上边」** 的点，可以画出示意图：
 
-<img src="../.gitbook/assets/透视投影 2D 示意图.svg" alt="视锥体挤压" class="gitbook-drawing">
+<img src="../../.gitbook/assets/透视投影 2D 示意图.svg" alt="视锥体挤压" class="gitbook-drawing">
 
 **推导思路**
 
-<figure><img src="../.gitbook/assets/Frustum&#x26;Cuboid.png" alt="" width="375"><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/Frustum&#x26;Cuboid.png" alt="" width="375"><figcaption></figcaption></figure>
 
 再次观察，可以思考出一些特性：
 
@@ -307,7 +307,7 @@ $$
 
 <summary>Perspective.swift</summary>
 
-同时归一化到 [gui-yi-hua-she-bei-kong-jian-ndcnormalized-device-coordinates.md](../kong-jian-zuo-biao-xi/gui-yi-hua-she-bei-kong-jian-ndcnormalized-device-coordinates.md "mention") 空间
+同时归一化到 [gui-yi-hua-she-bei-kong-jian-ndcnormalized-device-coordinates.md](../../kong-jian-zuo-biao-xi/gui-yi-hua-she-bei-kong-jian-ndcnormalized-device-coordinates.md "mention") 空间
 
 {% code title="Perspective.swift" %}
 ```swift
@@ -350,7 +350,7 @@ func perspective(aspect: Float, fovy: Float, near: Float, far: Float) -> float4x
 
 但我们也想传一点“全局”一些的东西，比如光照的方向、相机参数、材质属性、时间属性等，适合让 CPU 与 GPU 同时访问的数据，就可以称之为 Uniforms 数据结构
 
-那同时被 CPU 与 GPU 访问，换言之就是能同时被 Swift 与 MSL 访问，这种情况下，使用头文件做数据结构定义就很合适，详情见: [swift-diao-yong-.h-tou-wen-jian.md](../swift-diao-yong-.h-tou-wen-jian.md "mention")
+那同时被 CPU 与 GPU 访问，换言之就是能同时被 Swift 与 MSL 访问，这种情况下，使用头文件做数据结构定义就很合适，详情见: [swift-diao-yong-.h-tou-wen-jian.md](../../swift-diao-yong-.h-tou-wen-jian.md "mention")
 
 在 Shaders 内创建 Header 文件：Common.h
 
@@ -542,7 +542,7 @@ fragment float4 fragment_main(VertexOut in [[stage_in]]) {
 
 至此，应该就能见到一个立方体了：
 
-<figure><img src="../.gitbook/assets/没有处理遮挡关系的 Cube.png" alt="" width="375"><figcaption><p>没有处理遮挡关系的 Cube</p></figcaption></figure>
+<figure><img src="../../.gitbook/assets/没有处理遮挡关系的 Cube.png" alt="" width="375"><figcaption><p>没有处理遮挡关系的 Cube</p></figcaption></figure>
 
 🤬 为什么和预想中的又不一样？
 

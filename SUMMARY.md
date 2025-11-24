@@ -6,13 +6,17 @@
 
 ## 快速上手
 
-* [创建工程](kuai-su-shang-shou/chuang-jian-gong-cheng.md)
-* [你好，Metal View](kuai-su-shang-shou/ni-hao-metal-view.md)
-* [你好，渲染器](kuai-su-shang-shou/ni-hao-xuan-ran-qi.md)
-* [你好，三角形](kuai-su-shang-shou/ni-hao-san-jiao-xing.md)
-* [你好，Cube](kuai-su-shang-shou/ni-hao-cube.md)
-* [深度测试](kuai-su-shang-shou/shen-du-ce-shi.md)
-* [加载模型](kuai-su-shang-shou/jia-zai-mo-xing.md)
+* [Metal 扫盲](kuai-su-shang-shou/metal-sao-mang/README.md)
+  * [创建工程](kuai-su-shang-shou/metal-sao-mang/chuang-jian-gong-cheng.md)
+  * [你好，Metal View](kuai-su-shang-shou/metal-sao-mang/ni-hao-metal-view.md)
+  * [你好，渲染器](kuai-su-shang-shou/metal-sao-mang/ni-hao-xuan-ran-qi.md)
+  * [你好，三角形](kuai-su-shang-shou/metal-sao-mang/ni-hao-san-jiao-xing.md)
+  * [你好，Cube](kuai-su-shang-shou/metal-sao-mang/ni-hao-cube.md)
+  * [深度测试](kuai-su-shang-shou/metal-sao-mang/shen-du-ce-shi.md)
+  * [加载模型](kuai-su-shang-shou/metal-sao-mang/jia-zai-mo-xing.md)
+* [进阶](kuai-su-shang-shou/jin-jie/README.md)
+  * [光照](kuai-su-shang-shou/jin-jie/guang-zhao.md)
+  * [阴影](kuai-su-shang-shou/jin-jie/yin-ying.md)
 
 ## 光栅化流程
 
@@ -34,7 +38,7 @@
 * [小知识点](xiao-zhi-shi-dian/README.md)
   * [SIMD 数据结构](xiao-zhi-shi-dian/simd-shu-ju-jie-gou.md)
   * [内存布局 Memory Layout](xiao-zhi-shi-dian/nei-cun-bu-ju-memory-layout.md)
-  * [Page 1](xiao-zhi-shi-dian/page-1.md)
+  * [多平台兼容 ViewRepresentable](xiao-zhi-shi-dian/duo-ping-tai-jian-rong-viewrepresentable.md)
 * [命令队列 Command Queue](ming-ling-dui-lie-command-queue/README.md)
   * [命令编码器 Command Encoder](ming-ling-dui-lie-command-queue/ming-ling-bian-ma-qi-command-encoder.md)
   * [命令缓冲区 Command Buffer](ming-ling-dui-lie-command-queue/ming-ling-huan-chong-qu-command-buffer.md)
@@ -48,7 +52,8 @@
 * [MTLBuffer](mtlbuffer.md)
 * [Metal 4 核心 API](metal-4-he-xin-api.md)
 * [深度比较函数 MTLCompareFunction](shen-du-bi-jiao-han-shu-mtlcomparefunction.md)
-* [多平台兼容 ViewRepresentable](duo-ping-tai-jian-rong-viewrepresentable.md)
 * [Swift 调用 .h 头文件](swift-diao-yong-.h-tou-wen-jian.md)
 
 ## 数学
+
+* [线性代数](shu-xue/xian-xing-dai-shu.md)
