@@ -102,7 +102,7 @@ $$
 
 用一幅图来解释：
 
-<img src="../../.gitbook/assets/file.excalidraw.svg" alt="" class="gitbook-drawing">
+<img src="../../.gitbook/assets/法线与光照的夹角关系图.svg" alt="法线与光照的夹角关系图" class="gitbook-drawing">
 
 <details>
 
@@ -127,8 +127,4 @@ $$
 3. 在 Uniforms 中添加法线和光照信息，并让 Fragment Shader 也能读取 Uniforms Buffer
 4. 在 Vertex Shader 中归一化法线后传递给下一阶段
 5. 在 Fragment Shader 中，将法线与光照计算，最终得到每个像素的颜色
-
-
-
-
 
