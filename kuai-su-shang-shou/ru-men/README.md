@@ -16,9 +16,9 @@ layout:
     visible: true
 ---
 
-# Metal 扫盲
+# 入门
 
-Metal 扫盲，本系列将会为新手建立对图形学的基本认知，重点在于几何模型是如何通过矩阵，一步步变换到屏幕空间上的
+本系列将会为新手建立对图形学的基本认知，重点在于几何模型是如何通过矩阵，一步步变换到屏幕上的
 
 * [chuang-jian-gong-cheng.md](chuang-jian-gong-cheng.md "mention")
 * [ni-hao-metal-view.md](ni-hao-metal-view.md "mention")

@@ -7,4 +7,4 @@
 
 左侧为正交投影，右侧为透视投影
 
-<figure><img src="broken-reference" alt=""><figcaption></figcaption></figure>
+<figure><img src="/broken/files/nlubDOrie7MtjcEYPdEO" alt=""><figcaption></figcaption></figure>

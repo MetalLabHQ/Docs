@@ -6,14 +6,14 @@
 
 ## 快速上手
 
-* [Metal 扫盲](kuai-su-shang-shou/metal-sao-mang/README.md)
-  * [创建工程](kuai-su-shang-shou/metal-sao-mang/chuang-jian-gong-cheng.md)
-  * [你好，Metal View](kuai-su-shang-shou/metal-sao-mang/ni-hao-metal-view.md)
-  * [你好，渲染器](kuai-su-shang-shou/metal-sao-mang/ni-hao-xuan-ran-qi.md)
-  * [你好，三角形](kuai-su-shang-shou/metal-sao-mang/ni-hao-san-jiao-xing.md)
-  * [你好，Cube](kuai-su-shang-shou/metal-sao-mang/ni-hao-cube.md)
-  * [深度测试](kuai-su-shang-shou/metal-sao-mang/shen-du-ce-shi.md)
-  * [加载模型](kuai-su-shang-shou/metal-sao-mang/jia-zai-mo-xing.md)
+* [入门](kuai-su-shang-shou/ru-men/README.md)
+  * [创建工程](kuai-su-shang-shou/ru-men/chuang-jian-gong-cheng.md)
+  * [你好，Metal View](kuai-su-shang-shou/ru-men/ni-hao-metal-view.md)
+  * [你好，渲染器](kuai-su-shang-shou/ru-men/ni-hao-xuan-ran-qi.md)
+  * [你好，三角形](kuai-su-shang-shou/ru-men/ni-hao-san-jiao-xing.md)
+  * [你好，Cube](kuai-su-shang-shou/ru-men/ni-hao-cube.md)
+  * [深度测试](kuai-su-shang-shou/ru-men/shen-du-ce-shi.md)
+  * [加载模型](kuai-su-shang-shou/ru-men/jia-zai-mo-xing.md)
 * [进阶](kuai-su-shang-shou/jin-jie/README.md)
   * [光照](kuai-su-shang-shou/jin-jie/guang-zhao.md)
   * [阴影](kuai-su-shang-shou/jin-jie/yin-ying.md)

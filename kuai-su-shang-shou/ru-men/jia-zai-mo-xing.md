@@ -465,3 +465,13 @@ let camera = Camera(
 )
 ```
 {% endcode %}
+
+<figure><img src="../../.gitbook/assets/法线可视化的 obj 模型.png" alt="" width="320"><figcaption></figcaption></figure>
+
+<details>
+
+<summary><strong>Q：</strong>为什么五颜六色的？</summary>
+
+**A：**&#x8FD9;是**法线可视化 (Debug Normals)**&#x6280;术，是游戏开发中一种常用的调试技术，让物体表面的法线信息以颜色的形式显示出来，随着接下来的学习，你会逐步掌握法线在几何中的含义
+
+</details>
