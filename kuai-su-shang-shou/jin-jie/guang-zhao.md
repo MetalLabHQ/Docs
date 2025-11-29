@@ -1,16 +1,24 @@
 ---
-description: 神说，要有光
+description: 古法打光
 ---
 
 # 光照
 
+下载以下工程作为起点：
+
+{% file src="../../.gitbook/assets/Lighting.7z" %}
+
+本章节会教你如何为物体添加上光照效果，完整代码：
+
+{% embed url="https://github.com/MetalLabHQ/Lighting" %}
+
 ## 法线 Normal
 
-在上一章节 [#yong-normal-shang-se](../ru-men/jia-zai-mo-xing.md#yong-normal-shang-se "mention")中，有一个称为法线的概念没有解释，在接下来的续重，我们需要先了解法线的定义：
+在[#yong-normal-shang-se](../ru-men/jia-zai-mo-xing.md#yong-normal-shang-se "mention")中，有一个称为法线的概念没有解释，在接下来的续重，我们需要先了解法线的定义：
 
 法线是用来描述平面或顶点朝向的向量，在计算机中，法线是一个三维向量，通常被归一化，示意图为：
 
-<img src="../../.gitbook/assets/法线示意图.svg" alt="" class="gitbook-drawing">
+<img src="../../.gitbook/assets/法线示意图.svg" alt="一个水平表面的法线方向" class="gitbook-drawing">
 
 此处 N 向量为法向量，接下来我们会利用法线去计算光照和反射，但在这之前，我们现搞定法线可视化。
 
@@ -18,7 +26,7 @@ description: 神说，要有光
 
 上一节中渲染了一个五颜六色的模型：
 
-<figure><img src="../../.gitbook/assets/法线可视化的 obj 模型.png" alt="" width="320"><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/法线可视化的 obj 模型.png" alt="" width="320"><figcaption><p>法线可视化的模型</p></figcaption></figure>
 
 法线可视化是一个常用的调试手段，可以排查一些如模型内外翻转、表面黑色接缝、光线异常等错误。
 
@@ -128,3 +136,208 @@ $$
 4. 在 Vertex Shader 中归一化法线后传递给下一阶段
 5. 在 Fragment Shader 中，将法线与光照计算，最终得到每个像素的颜色
 
+#### 准备 Light
+
+**什么是光？**
+
+在图形学中，我们通常会为场景添加一个平行光，即光从无限远的地方，朝一个固定方向照射向场景，在这里光照射的体积应为无限大，这时候去量化这样的光是不现实的，可以换个角度想：
+
+**定义场景上所有地方都被同样的光照射**
+
+就等同于定义了这一束光（有点先鸡后蛋的感觉），来到 Uniforms.h，创建 Light 结构：
+
+{% code title="Uniforms.h" %}
+```cpp
+typedef struct {
+    simd_float3 direction; // 方向
+    simd_float3 color;     // 颜色
+} Light;
+```
+{% endcode %}
+
+同时为 Renderer 添加 light 属性
+
+```swift
+let light = Light(
+    direction: SIMD3<Float>(1, -1, -1),
+    color: SIMD3<Float>(1, 1, 1)
+)
+```
+
+从光照方向上来看，这大概是从**左后方**照向模型的光
+
+#### 计算法线矩阵 Normal Matrix
+
+从上面的教学我们可以得知，要想知道一个面是如何被照射的，需要得到他们的法线
+
+法线也叫法向量，是一个垂直于三角面的向量，表示三角面的朝向，可以对模型矩阵进行逆转置计算得到：
+
+$$
+\mathbf{N}' = \left(\mathbf{M}^{-1}\right)^{\!\top} \mathbf{N}
+$$
+
+* $$\mathbf{M}$$ 是模型矩阵 Model Matrix
+* $$\mathbf{M}^{-1}$$ 是它的逆矩阵
+* $$\left(\mathbf{M}^{-1}\right)^{\!\top}$$ 是逆矩阵的转置，这里我们叫逆转置
+* $$\mathbf{N}$$ 是模型空间的法线向量，也是他的原始值
+* $$\mathbf{N}'$$ 是变换后的法线向量，也就是我们要的结果
+
+我们从下面的图去观察，假设放入世界空间时，对模型进行一次剪切操作，观察它的法线发生了什么变化：
+
+1. **图 1** 是原本模型空间（也就是模型的局部坐标）的坐标系，法线是正常垂直于表面的，这是模型本身的样子
+2. 放入世界空间后，不对法线做任何变换，就得到了**图 2** 上的法线，右侧的法线并不垂直于该平面
+3. 那聪明一点呢？模型放入世界需要乘上模型矩阵，那讲法线也乘上模型矩阵呢？那就得到了**图 3**，由于剪切不会更改模型的 Y 坐标，这就导致了不光向上的法线歪了，向右的法线也被拉长了
+4. 唯独通过转置矩阵 $$\mathbf{N}' = \left(\mathbf{M}^{-1}\right)^{\!\top} \mathbf{N}$$，才可计算出该模型正确的法线，得到**图 4，**&#x90A3;么将**图 1** 法线变为**图 4** 法线的矩阵，就称之为**法线矩阵 Normal Matrix**
+
+<img src="../../.gitbook/assets/file.excalidraw.svg" alt="" class="gitbook-drawing">
+
+在 Renderer.swift 内准备法线矩阵的计算：
+
+{% code title="Renderer.swift" %}
+```swift
+func normalMatrix(modelMatrix: float4x4) -> float3x3 {
+    let inverseTranspose = modelMatrix.inverse.transpose
+    let normalMatrix = float3x3(
+        SIMD3<Float>(inverseTranspose.columns.0.x, inverseTranspose.columns.0.y, inverseTranspose.columns.0.z),
+        SIMD3<Float>(inverseTranspose.columns.1.x, inverseTranspose.columns.1.y, inverseTranspose.columns.1.z),
+        SIMD3<Float>(inverseTranspose.columns.2.x, inverseTranspose.columns.2.y, inverseTranspose.columns.2.z)
+    )
+    
+    return normalMatrix
+}
+```
+{% endcode %}
+
+为 Uniforms 添加上 normal 和 light，以便使用 GPU 进行运算：
+
+<pre class="language-cpp"><code class="lang-cpp">typedef struct {
+    matrix_float4x4 mvpMatrix;
+<strong>    simd_float3x3 normal;
+</strong><strong>    Light light;
+</strong>} Uniforms;
+</code></pre>
+
+同时在 `updateUniforms()` 函数内添加上：
+
+<pre class="language-swift"><code class="lang-swift">func updateUniforms(uniformBuffer: MTLBuffer, aspect: Float) {
+    // 准备 MVP 矩阵
+    let modelMatrix = matrix_identity_float4x4
+    
+    let viewMatrix = lookAt(
+        eye: camera.position,
+        target: camera.target,
+        up: camera.up
+    )
+    
+    let projectionMatrix = perspective(
+        aspect: aspect,
+        fovy: .pi / 3,
+        near: 0.1,
+        far: 100
+    )
+    
+    // 模型坐标 -> 世界坐标 -> 视图坐标 -> 裁剪坐标
+    let mvpMatrix = projectionMatrix * viewMatrix * modelMatrix
+<strong>    let normalMatrix = normalMatrix(modelMatrix: modelMatrix)
+</strong><strong>    
+</strong><strong>    var uniforms = Uniforms(
+</strong><strong>        mvpMatrix: mvpMatrix,
+</strong><strong>        normalMatrix: normalMatrix,
+</strong><strong>        light: light
+</strong><strong>    )
+</strong>    
+    // 复制到 GPU 缓冲区
+    memcpy(uniformBuffer.contents(), &#x26;uniforms, MemoryLayout&#x3C;Uniforms>.size)
+}
+</code></pre>
+
+至此，已经将 Uniforms 传递给了 GPU
+
+#### 计算光照
+
+来到 Shaders.metal，在 Vertex Shader 阶段，将模型的法线乘上法线矩阵，并将其归一化（方便后续点积计算）：
+
+<pre class="language-cpp" data-title="Shaders.metal"><code class="lang-cpp">#import "Common.h"
+using namespace metal;
+
+vertex VertexOut vertex_main(VertexIn in [[stage_in]], constant Uniforms &#x26;uniforms [[buffer(1)]])
+{
+    VertexOut out;
+    
+    out.position = uniforms.mvpMatrix * float4(in.position, 1.0);
+<strong>    out.normal = normalize(uniforms.normalMatrix * in.normal); // 归一化法线
+</strong>    
+    return out;
+}
+</code></pre>
+
+在 Fragment Shader 中，先将光线的方向反转，用于计算夹角，在使用 `max()` 函数截断负数的情况，最后将点积结果运用于光线的颜色，就得到这个片元最终的颜色了：
+
+{% code title="Shaders.metal" %}
+```cpp
+fragment float4 fragment_main(VertexOut in [[stage_in]], constant Uniforms &uniforms [[buffer(1)]])
+{
+    float3 normal = in.normal;
+    float3 lightDirection = normalize(-uniforms.light.direction);
+    float NdotL = max(dot(normal, lightDirection), 0.0);
+    
+    float3 diffuse = NdotL * uniforms.light.color;
+    float3 color = diffuse;
+    
+    return float4(color, 1.0);
+}
+```
+{% endcode %}
+
+注意这里 constant Uniforms \&uniforms \[\[buffer(1)]] 代表 Fragment Shader 也从第一个 Buffer 插槽读取了 Uniforms Buffer
+
+从 Renderer 的初始化过程中，可以得知：`self.argumentTable.setAddress(uniformsBuffer.gpuAddress, index: 1)`，意味着将 Uniforms Buffer 绑定至第一个插槽，要回到 Renderer 的 `draw()` 函数中，将 RenderEncoder 绑定的参数表设定为 Vertex Shader 与 Fragment Shader 两个阶段都允许访问：
+
+```swift
+renderEncoder.setArgumentTable(argumentTable, stages: [.vertex, .fragment])
+```
+
+运行工程，我们就得到了一个拥有光照的模型了：
+
+<figure><img src="../../.gitbook/assets/image.png" alt="" width="188"><figcaption><p>拥有 Lambert 光照的模型</p></figcaption></figure>
+
+#### 转起来
+
+为了方便观察，我们可以用一些简单的手段将模型旋转起来，创建绕 Y 轴旋转矩阵的初始化：
+
+```swift
+extension float4x4 {
+    init(rotationY angle: Float) {
+        self = float4x4(
+            SIMD4<Float>( cos(angle), 0,  sin(angle), 0),
+            SIMD4<Float>( 0,         1,  0,          0),
+            SIMD4<Float>(-sin(angle), 0,  cos(angle), 0),
+            SIMD4<Float>( 0,         0,  0,          1)
+        )
+    }
+}
+```
+
+在 Renderer 内添加 timer 属性，并在每一次旋转的时候，将其 +0.01，最后让 timer 作为模型矩阵的 Y 轴旋转值：
+
+```swift
+class Renderer: NSObject, MTKViewDelegate {
+    var timer: float = 0
+    
+    func draw(in view: MTKView) {
+        guard let drawable = view.currentDrawable else { return }
+        timer += 0.01
+    }
+
+    func updateUniforms(uniformBuffer: MTLBuffer, aspect: Float) {
+        // 准备 MVP 矩阵
+        let modelMatrix = float4x4(rotationY: timer)
+    }
+}
+```
+
+运行工程，现在你的模型应该能够转起来了，可以自行调整旋转的速度，仔细观察它的颜色变化，可以从中感受到光照与法线的夹角是如何影响一个面的亮度
+
+我放了一个回到顶部的按钮，如果这一次没有完全理解，不要气馁，重新来一遍就好
+
+<a href="guang-zhao.md#fa-xian-normal" class="button secondary" data-icon="chevron-up">回到顶部</a>

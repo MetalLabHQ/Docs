@@ -4,9 +4,7 @@
 
 {% embed url="https://github.com/MetalLabHQ/LoadAssets.git" %}
 
-本章节会教你如何真正的加载一个模型
-
-下载该工程作为起点：
+本章节会教你如何真正的加载一个模型，下载该工程作为起点：
 
 {% file src="../../.gitbook/assets/LoadAssets.7z" %}
 初始工程

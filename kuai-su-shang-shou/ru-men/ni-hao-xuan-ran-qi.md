@@ -4,8 +4,6 @@ description: Hello, Renderer.
 
 # 你好，渲染器
 
-<table data-header-hidden><thead><tr><th width="100"></th><th width="100"></th></tr></thead><tbody><tr><td>作者</td><td>GH</td></tr></tbody></table>
-
 完整代码：
 
 {% embed url="https://github.com/MetalLabHQ/HelloMetalView.git" %}

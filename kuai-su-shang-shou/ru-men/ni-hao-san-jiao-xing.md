@@ -4,11 +4,11 @@ description: Hello, Triangle.
 
 # 你好，三角形
 
-#### 图形学入门第一课！
-
 完整代码：
 
 {% embed url="https://github.com/MetalLabHQ/HelloTriangle.git" %}
+
+#### 图形学入门第一课！
 
 坐稳了，接下来才是真正有挑战的部分，或许你会反复阅读这篇文章，直到有一次你对渲染管线有
 

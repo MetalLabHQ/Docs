@@ -17,6 +17,7 @@
 * [进阶](kuai-su-shang-shou/jin-jie/README.md)
   * [光照](kuai-su-shang-shou/jin-jie/guang-zhao.md)
   * [阴影](kuai-su-shang-shou/jin-jie/yin-ying.md)
+  * [发生什么事了？](kuai-su-shang-shou/jin-jie/fa-sheng-shen-me-shi-le.md)
 
 ## 光栅化流程
 

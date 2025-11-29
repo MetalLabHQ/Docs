@@ -1,7 +1,5 @@
 # 创建工程
 
-<table data-header-hidden><thead><tr><th width="100"></th><th width="100"></th></tr></thead><tbody><tr><td>作者</td><td>GH</td></tr></tbody></table>
-
 Metal 4 是一个苹果生态的的图形 API，在开始学习 Metal 之前，确保你的设备是 Apple Silicon 的 Mac，并且系统更新到了 macOS Tahoe 26 及以上
 
 本课程所有内容均考虑 iOS/macOS 等多平台，所以难免会写一些兼容性代码，同时在一些教程上，会在顶部留下折叠后的完整代码方便快速查阅。

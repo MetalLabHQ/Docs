@@ -4,8 +4,6 @@ description: Hello, Metal View
 
 # 你好，Metal View
 
-<table data-header-hidden><thead><tr><th width="100"></th><th width="100"></th></tr></thead><tbody><tr><td>作者</td><td>GH</td></tr></tbody></table>
-
 在开始渲染前，我们需要准备一个专门显示 Metal 画面的视图，也就是 Metal View
 
 Metal View 封装了 Metal 渲染所需的基础设置，让你能够快速开始 Metal 开发而无需处理复杂的底层配置，类似于 OpenGL 中的 GLFW 窗口。
