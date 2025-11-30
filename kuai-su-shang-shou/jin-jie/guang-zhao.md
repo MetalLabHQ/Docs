@@ -14,7 +14,7 @@ description: 古法打光
 
 ## 法线 Normal
 
-在[#yong-normal-shang-se](../ru-men/jia-zai-mo-xing.md#yong-normal-shang-se "mention")中，有一个称为法线的概念没有解释，在接下来的续重，我们需要先了解法线的定义：
+在[#yong-normal-shang-se](../ru-men/jia-zai-mo-xing.md#yong-normal-shang-se "mention")中，有一个称为法线的概念没有解释，在接下来的学习中，我们需要先了解法线的定义：
 
 法线是用来描述平面或顶点朝向的向量，在计算机中，法线是一个三维向量，通常被归一化，示意图为：
 
@@ -184,12 +184,12 @@ $$
 
 我们从下面的图去观察，假设放入世界空间时，对模型进行一次剪切操作，观察它的法线发生了什么变化：
 
+<img src="../../.gitbook/assets/法线矩阵与不用法线矩阵的区别.svg" alt="" class="gitbook-drawing">
+
 1. **图 1** 是原本模型空间（也就是模型的局部坐标）的坐标系，法线是正常垂直于表面的，这是模型本身的样子
 2. 放入世界空间后，不对法线做任何变换，就得到了**图 2** 上的法线，右侧的法线并不垂直于该平面
 3. 那聪明一点呢？模型放入世界需要乘上模型矩阵，那讲法线也乘上模型矩阵呢？那就得到了**图 3**，由于剪切不会更改模型的 Y 坐标，这就导致了不光向上的法线歪了，向右的法线也被拉长了
 4. 唯独通过转置矩阵 $$\mathbf{N}' = \left(\mathbf{M}^{-1}\right)^{\!\top} \mathbf{N}$$，才可计算出该模型正确的法线，得到**图 4，**&#x90A3;么将**图 1** 法线变为**图 4** 法线的矩阵，就称之为**法线矩阵 Normal Matrix**
-
-<img src="../../.gitbook/assets/file.excalidraw.svg" alt="" class="gitbook-drawing">
 
 在 Renderer.swift 内准备法线矩阵的计算：
 
@@ -299,7 +299,7 @@ renderEncoder.setArgumentTable(argumentTable, stages: [.vertex, .fragment])
 
 运行工程，我们就得到了一个拥有光照的模型了：
 
-<figure><img src="../../.gitbook/assets/image.png" alt="" width="188"><figcaption><p>拥有 Lambert 光照的模型</p></figcaption></figure>
+<figure><img src="../../.gitbook/assets/拥有 Lambert 光照的模型.png" alt="" width="188"><figcaption><p>拥有 Lambert 光照的模型</p></figcaption></figure>
 
 #### 转起来
 
