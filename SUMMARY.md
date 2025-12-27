@@ -58,4 +58,11 @@
 
 ## 数学
 
-* [线性代数](shu-xue/xian-xing-dai-shu.md)
+* [线性代数 Linear Algebra](shu-xue/xian-xing-dai-shu-linear-algebra/README.md)
+  * [向量 Vector](shu-xue/xian-xing-dai-shu-linear-algebra/xiang-liang-vector/README.md)
+    * [向量 Vector](shu-xue/xian-xing-dai-shu-linear-algebra/xiang-liang-vector/xiang-liang-vector.md)
+    * [模 Magnitude](shu-xue/xian-xing-dai-shu-linear-algebra/xiang-liang-vector/mo-magnitude.md)
+    * [归一化 Normalization](shu-xue/xian-xing-dai-shu-linear-algebra/xiang-liang-vector/gui-yi-hua-normalization.md)
+    * [单位向量 Unit Vector](shu-xue/xian-xing-dai-shu-linear-algebra/xiang-liang-vector/dan-wei-xiang-liang-unit-vector.md)
+    * [点积 Dot Product](shu-xue/xian-xing-dai-shu-linear-algebra/xiang-liang-vector/dian-ji-dot-product.md)
+    * [叉积 Cross Product](shu-xue/xian-xing-dai-shu-linear-algebra/xiang-liang-vector/cha-ji-cross-product.md)
