@@ -2,11 +2,11 @@
 
 完整代码：
 
-{% embed url="https://github.com/MetalLabHQ/LoadAssets.git" %}
+{% embed url="https://github.com/MetalLabHQ/LoadOBJ.git" %}
 
-本章节会教你如何真正的加载一个模型，下载该工程作为起点：
+本章节会教你如何真正的加载一个 OBJ 模型，下载该工程作为起点：
 
-{% file src="../../.gitbook/assets/LoadAssets.7z" %}
+{% file src="../../.gitbook/assets/LoadOBJ.7z" %}
 初始工程
 {% endfile %}
 
@@ -69,6 +69,8 @@ class Entity {
 
 {% code title="Mesh.swift" %}
 ```swift
+import MetalKit
+
 struct Mesh {
     var vertexBuffers: [MTLBuffer]
     var submeshes: [Submesh]
@@ -99,6 +101,8 @@ struct Submesh {
 
 {% code title="AssetsLoader.swift" %}
 ```swift
+import MetalKit
+
 enum AssetsLoader {
     static func loadAssets(named filename: String, ext: String, device: MTLDevice) -> MDLAsset? {
         guard let url = Bundle.main.url(forResource: filename, withExtension: ext) else {
@@ -351,33 +355,105 @@ objects:
 
 > 目前出于教学才直接使用模型的顶点描述作为渲染管线的顶点描述，真正的渲染引擎会设计一套规范，为缺失的属性补上默认值
 
+{% tabs %}
+{% tab title="加载模型并准备顶点布局" %}
 {% code title="Renderer.swift" %}
 ```swift
-class Renderer: NSObject, MTKViewDelegate {
-    var entities: [Entity] = []
+var entities: [Entity] = []
+
+init(device: MTLDevice) throws {
     
-    init(device: MTLDevice) throws {
-        self.device = device
-        
-        // MARK: - Command Queue
-        self.commandQueue = device.makeMTL4CommandQueue()!
-        self.commandBuffer = device.makeCommandBuffer()!
-        self.commandAllocator = device.makeCommandAllocator()!
-        
-        let asset = AssetsLoader.loadAssets(named: "truncated icosahedron", ext: "obj", device: device)!
-        for i in 0..<asset.count {
-            let object = asset.object(at: i)
-            entities.append(Entity(object: object, device: device))
-        }
-        
-        let vertexDescriptor = MTKMetalVertexDescriptorFromModelIO(asset.vertexDescriptor!)!
-        
-        // MARK: - Descriptor
-        pipelineDescriptor.vertexDescriptor = vertexDescriptor
+    let asset = AssetsLoader.loadAssets(named: "truncated icosahedron", ext: "obj", device: device)!
+    for i in 0..<asset.count {
+        let object = asset.object(at: i)
+        entities.append(Entity(object: object, device: device))
     }
+    
+    // MARK: - Vertex Descriptor
+    let vertexDescriptor = MTKMetalVertexDescriptorFromModelIO(asset.vertexDescriptor!)!
+    
+    
+    // MARK: - Descriptor
+    pipelineDescriptor.vertexDescriptor = vertexDescriptor
 }
 ```
 {% endcode %}
+{% endtab %}
+
+{% tab title="init() 完整代码" %}
+```swift
+var entities: [Entity] = []
+
+init(device: MTLDevice) throws {
+    self.device = device
+    
+    let asset = AssetsLoader.loadAssets(named: "truncated icosahedron", ext: "obj", device: device)!
+    for i in 0..<asset.count {
+        let object = asset.object(at: i)
+        entities.append(Entity(object: object, device: device))
+    }
+    
+    // MARK: - Command Queue
+    self.commandQueue = device.makeMTL4CommandQueue()!
+    self.commandBuffer = device.makeCommandBuffer()!
+    self.commandAllocator = device.makeCommandAllocator()!
+    
+    // MARK: - Vertex Descriptor
+    let vertexDescriptor = MTKMetalVertexDescriptorFromModelIO(asset.vertexDescriptor!)!
+    
+    // MARK: - Buffers
+    self.uniformsBuffer = device.makeBuffer(
+        length: MemoryLayout<Uniforms>.size
+    )!
+    
+    // 参数表
+    let argTableDescriptor = MTL4ArgumentTableDescriptor()
+    argTableDescriptor.maxBufferBindCount = 2
+    self.argumentTable = try device.makeArgumentTable(descriptor: argTableDescriptor)
+    self.argumentTable.setAddress(uniformsBuffer.gpuAddress, index: 1)
+    
+    
+    // MARK: - Load Shaders
+    let library = device.makeDefaultLibrary()!
+    
+    // 顶点着色器
+    let vertexFunctionDescriptor       = MTL4LibraryFunctionDescriptor()
+    vertexFunctionDescriptor.library   = library
+    vertexFunctionDescriptor.name      = "vertex_main"
+    
+    // 片元着色器
+    let fragmentFunctionDescriptor     = MTL4LibraryFunctionDescriptor()
+    fragmentFunctionDescriptor.library = library
+    fragmentFunctionDescriptor.name    = "fragment_main"
+    
+    
+    // MARK: - Descriptor
+    // 渲染管线描述符
+    let pipelineDescriptor = MTL4RenderPipelineDescriptor()
+    pipelineDescriptor.vertexFunctionDescriptor        = vertexFunctionDescriptor
+    pipelineDescriptor.fragmentFunctionDescriptor      = fragmentFunctionDescriptor
+    pipelineDescriptor.vertexDescriptor                = vertexDescriptor
+    pipelineDescriptor.colorAttachments[0].pixelFormat = .bgra8Unorm
+    
+    // 深度模板描述符
+    let depthStateDescriptor = MTLDepthStencilDescriptor()
+    depthStateDescriptor.depthCompareFunction = .less
+    depthStateDescriptor.isDepthWriteEnabled = true
+    
+    
+    // MARK: - State
+    // 创建渲染管线状态
+    self.pipelineState = try device
+        .makeCompiler(descriptor: MTL4CompilerDescriptor())
+        .makeRenderPipelineState(descriptor: pipelineDescriptor)
+    self.depthState = device
+        .makeDepthStencilState(descriptor: depthStateDescriptor)!
+    
+    super.init()
+}
+```
+{% endtab %}
+{% endtabs %}
 
 准备一个 renderEntity 函数：
 
@@ -403,18 +479,72 @@ func renderEntity(_ entity: Entity, renderEncoder: MTL4RenderCommandEncoder) {
 ```
 {% endcode %}
 
-来到 `draw()` 函数，在 draw 部分调用函数：
+来到 `draw()` 函数，在 draw 部分调用 `renderEntity()` 函数：
 
+{% tabs %}
+{% tab title="渲染 Entity" %}
 {% code title="Renderer.swift" %}
 ```swift
+// MARK: - Draw
+for entity in entities {
+    renderEntity(entity, renderEncoder: renderEncoder)
+}
+```
+{% endcode %}
+{% endtab %}
+
+{% tab title="draw() 完整代码" %}
+```swift
 func draw(in view: MTKView) {
+    guard let drawable = view.currentDrawable else { return }
+    
+    // MARK: - Update Uniforms
+    let aspect = view.drawableSize.width / view.drawableSize.height
+    updateUniforms(uniformBuffer: uniformsBuffer, aspect: Float(aspect))
+    
+    
+    // MARK: - Begin Command Buffer
+    self.commandQueue.waitForDrawable(drawable)
+    self.commandAllocator.reset()
+    self.commandBuffer.beginCommandBuffer(allocator: commandAllocator)
+    
+    
+    // MARK: - Render Pass
+    guard let mtl4RenderPassDescriptor = view.currentMTL4RenderPassDescriptor else { return }
+    mtl4RenderPassDescriptor.colorAttachments[0].clearColor = MTLClearColor(red: 0.2, green: 0.2, blue: 0.25, alpha: 1.0)
+    
+    
+    // MARK: - Begin Render Encoder
+    guard let renderEncoder = commandBuffer.makeRenderCommandEncoder(
+        descriptor: mtl4RenderPassDescriptor,
+        options: MTL4RenderEncoderOptions()
+    ) else { return }
+    
+    
+    // MARK: - Setup State
+    renderEncoder.setRenderPipelineState(pipelineState)
+    renderEncoder.setDepthStencilState(depthState)
+    renderEncoder.setArgumentTable(argumentTable, stages: .vertex)
+    
+    
     // MARK: - Draw
     for entity in entities {
         renderEntity(entity, renderEncoder: renderEncoder)
     }
+    
+    // MARK: - End Render Encoder
+    renderEncoder.endEncoding()
+    
+    
+    // MARK: - End Command Buffer
+    self.commandBuffer.endCommandBuffer()
+    self.commandQueue.commit([commandBuffer], options: nil)
+    self.commandQueue.signalDrawable(drawable)
+    drawable.present()
 }
 ```
-{% endcode %}
+{% endtab %}
+{% endtabs %}
 
 #### 用 Normal 上色
 
@@ -457,14 +587,14 @@ fragment float4 fragment_main(VertexOut in [[stage_in]]) {
 {% code title="Renderer.swift" %}
 ```swift
 let camera = Camera(
-    position: SIMD3<Float>(0, 10, 10),
+    position: SIMD3<Float>(0, 0, 15),
     target: SIMD3<Float>(0, 0, 0),
     up: SIMD3<Float>(0, 1, 0)
 )
 ```
 {% endcode %}
 
-<figure><img src="../../.gitbook/assets/法线可视化的 obj 模型.png" alt="" width="320"><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/法线可视化的截角二十面体.png" alt="" width="320"><figcaption></figcaption></figure>
 
 <details>
 

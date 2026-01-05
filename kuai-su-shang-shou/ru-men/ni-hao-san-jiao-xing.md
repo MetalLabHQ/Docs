@@ -93,7 +93,7 @@ vertexDescriptor.layouts[0].stride = MemoryLayout<Vertex>.stride // 32 字节
 ```
 {% endtab %}
 
-{% tab title="完整代码" %}
+{% tab title="init() 完整代码" %}
 ```swift
 init(device: MTLDevice) throws {
     self.device = device
@@ -229,8 +229,9 @@ init(device: MTLDevice) throws {
 
 <details>
 
-<summary>Shaders.metal 完整代码</summary>
+<summary>完整代码</summary>
 
+{% code title="Shaders.metal" %}
 ```cpp
 #include <metal_stdlib>
 using namespace metal;
@@ -256,6 +257,7 @@ fragment float4 fragment_main(VertexOut in [[stage_in]]) {
     return in.color;
 }
 ```
+{% endcode %}
 
 </details>
 
@@ -365,7 +367,7 @@ fragmentFunctionDescriptor.name    = "fragment_main"
 ```
 {% endtab %}
 
-{% tab title="完整代码" %}
+{% tab title="init() 完整代码" %}
 ```swift
 init(device: MTLDevice) throws {
     self.device = device

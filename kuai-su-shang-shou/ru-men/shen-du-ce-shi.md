@@ -6,7 +6,9 @@
 
 下载该工程作为起点：
 
-{% file src="../../.gitbook/assets/LoadAssets.7z" %}
+{% file src="../../.gitbook/assets/DepthTest.7z" %}
+初始工程
+{% endfile %}
 
 在上一章节，似乎在可见性上出了一些问题？与我们预期中看到的立方体不太一样？
 
@@ -58,8 +60,10 @@ pipelineDescriptor.isRasterizationEnabled = true
 let depthState: MTLDepthStencilState
 ```
 
-在 init 初始化中，创建深度测试
+在 init 函数中，初始化深度测试状态
 
+{% tabs %}
+{% tab title="添加深度测试描述符" %}
 ```swift
 // 深度模板描述符
 let depthStateDescriptor = MTLDepthStencilDescriptor()
@@ -70,8 +74,102 @@ depthStateDescriptor.isDepthWriteEnabled = true
 self.depthState = device
     .makeDepthStencilState(descriptor: depthStateDescriptor)!
 ```
+{% endtab %}
 
-最后前往 Draw 绘制中，在渲染编码器内使用它以便编码给 GPU
+{% tab title="init() 完整代码" %}
+```swift
+init(device: MTLDevice) throws {
+    self.device = device
+    
+    // MARK: - 配置命令队列 Command Queue
+    self.commandQueue = device.makeMTL4CommandQueue()!
+    self.commandBuffer = device.makeCommandBuffer()!
+    self.commandAllocator = device.makeCommandAllocator()!
+    
+    
+    // MARK: - 顶点描述符
+    // 描述顶点内存布局
+    let vertexDescriptor = MTLVertexDescriptor()
+    // 配置 position 属性
+    vertexDescriptor.attributes[0].format = .float3
+    vertexDescriptor.attributes[0].offset = 0
+    vertexDescriptor.attributes[0].bufferIndex = 0
+    
+    // 配置 color 属性
+    vertexDescriptor.attributes[1].format = .float4
+    vertexDescriptor.attributes[1].offset = MemoryLayout<SIMD3<Float>>.stride
+    vertexDescriptor.attributes[1].bufferIndex = 0
+    
+    // 定义顶点内存布局
+    vertexDescriptor.layouts[0].stride = MemoryLayout<Vertex>.stride
+    
+    
+    // MARK: - 设置 Buffer
+    // 使用三角形的顶点数组创建 Buffer
+    self.vertexBuffer = device.makeBuffer(
+        bytes: vertices,
+        length: MemoryLayout<Vertex>.size * vertices.count
+    )!
+    self.indexBuffer = device.makeBuffer(
+        bytes: indices,
+        length: MemoryLayout<UInt32>.size * indices.count
+    )!
+    self.uniformsBuffer = device.makeBuffer(
+        length: MemoryLayout<Uniforms>.size
+    )!
+    
+    
+    // MARK: - 加载 Shader
+    let library = device.makeDefaultLibrary()!
+    
+    // 顶点着色器
+    let vertexFunctionDescriptor       = MTL4LibraryFunctionDescriptor()
+    vertexFunctionDescriptor.library   = library
+    vertexFunctionDescriptor.name      = "vertex_main"
+    
+    // 片元着色器
+    let fragmentFunctionDescriptor     = MTL4LibraryFunctionDescriptor()
+    fragmentFunctionDescriptor.library = library
+    fragmentFunctionDescriptor.name    = "fragment_main"
+    
+    
+    // MARK: - 描述符 Descriptor
+    // 渲染管线描述符
+    let pipelineDescriptor = MTL4RenderPipelineDescriptor()
+    pipelineDescriptor.vertexFunctionDescriptor        = vertexFunctionDescriptor
+    pipelineDescriptor.fragmentFunctionDescriptor      = fragmentFunctionDescriptor
+    pipelineDescriptor.vertexDescriptor                = vertexDescriptor
+    pipelineDescriptor.colorAttachments[0].pixelFormat = .bgra8Unorm
+    
+    // 参数表
+    let argTableDescriptor = MTL4ArgumentTableDescriptor()
+    argTableDescriptor.maxBufferBindCount = 2 // 最多可以绑定两个 Buffer
+    self.argumentTable = try device.makeArgumentTable(descriptor: argTableDescriptor)
+    self.argumentTable.setAddress(vertexBuffer.gpuAddress, index: 0) // 将三角形顶点 Buffer 设为第 0 个 Buffer
+    self.argumentTable.setAddress(uniformsBuffer.gpuAddress, index: 1) // 将 uniformsBuffer 设为第 1 个 Buffer
+    
+    // 深度模板描述符
+    let depthStateDescriptor = MTLDepthStencilDescriptor()
+    depthStateDescriptor.depthCompareFunction = .less
+    depthStateDescriptor.isDepthWriteEnabled = true
+    
+    
+    // MARK: - 状态 State
+    // 创建渲染管线状态
+    self.pipelineState = try device
+        .makeCompiler(descriptor: MTL4CompilerDescriptor())
+        .makeRenderPipelineState(descriptor: pipelineDescriptor)
+    // 深度测试
+    self.depthState = device
+        .makeDepthStencilState(descriptor: depthStateDescriptor)!
+    
+    super.init()
+}
+```
+{% endtab %}
+{% endtabs %}
+
+最后前往 Draw 绘制中，在渲染编码器上使用刚才创建的深度测试状态
 
 ```swift
 renderEncoder.setDepthStencilState(depthState)

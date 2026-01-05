@@ -26,7 +26,7 @@ description: 古法打光
 
 上一节中渲染了一个五颜六色的模型：
 
-<figure><img src="../../.gitbook/assets/法线可视化的 obj 模型.png" alt="" width="320"><figcaption><p>法线可视化的模型</p></figcaption></figure>
+<figure><img src="../../.gitbook/assets/法线可视化的截角二十面体.png" alt="" width="320"><figcaption><p>法线可视化的模型</p></figcaption></figure>
 
 法线可视化是一个常用的调试手段，可以排查一些如模型内外翻转、表面黑色接缝、光线异常等错误。
 

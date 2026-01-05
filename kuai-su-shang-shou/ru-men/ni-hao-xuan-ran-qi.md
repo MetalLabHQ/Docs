@@ -6,7 +6,7 @@ description: Hello, Renderer.
 
 完整代码：
 
-{% embed url="https://github.com/MetalLabHQ/HelloMetalView.git" %}
+{% embed url="https://github.com/MetalLabHQ/HelloMetal.git" %}
 
 创建 Renderer.swift，我们要准备创建整个渲染器了。
 
@@ -46,8 +46,9 @@ Command Allocator 将 GPU 渲染指令编码成 Command Buffer，存入队列 Co
 
 #### 初始化渲染器 Renderer
 
-将 Renderer 遵循 MTKViewDelegate，创建好命令队列、命令缓冲、命令分配器，
+将 Renderer 遵循 MTKViewDelegate，创建好命令队列、命令缓冲、命令分配器：
 
+{% code title="Renderer.swift" %}
 ```swift
 import SwiftUI
 import MetalKit
@@ -80,26 +81,26 @@ class Renderer: NSObject, MTKViewDelegate {
     MetalView()
 }
 ```
+{% endcode %}
 
 #### 开始绘制
 
-Draw 是每一帧都会执行的函数，在这里要创建出一个让 GPU 渲染的指令
+Draw 是<mark style="color:$primary;background-color:$primary;">每一帧都会执行的函数</mark>，在这里要创建出一个让 GPU 渲染的指令
 
 ```swift
 func draw(in view: MTKView) {
     guard let drawable = view.currentDrawable else { return }
     
-    // MARK: - Begin Command Buffer
+    // MARK: - 开始命令编码 Begin Command Buffer
     self.commandQueue.waitForDrawable(drawable)
     self.commandAllocator.reset()
     self.commandBuffer.beginCommandBuffer(allocator: commandAllocator)
     
-    
-    // MARK: - End Command Buffer
+    // MARK: - 结束命令编码 End Command Buffer
     self.commandBuffer.endCommandBuffer()
     self.commandQueue.commit([commandBuffer], options: nil)
     self.commandQueue.signalDrawable(drawable)
-    drawable.present()
+    drawable.present()    
 }
 ```
 
@@ -112,25 +113,48 @@ func draw(in view: MTKView) {
 
 不用怕，洋红色是 GPU 出错时的标准调试颜色，这里只是因为 GPU 渲染了一个空的 Command Buffer，接下来为它添加一些渲染的内容就好了
 
-在 `beginCommandBuffer` 和 `endCommandBuffer` 之间添加一个 **RenderPassDescriptor**，它是定义一次渲染操作的参数，这里做一个清屏操作：
+在 `beginCommandBuffer` 和 `endCommandBuffer` 之间添加一个 **RenderPassDescriptor**，它是定义一次渲染操作的参数，后面我们会接触到其他的 Pass，这里做一个简单的清屏操作：
 
+{% tabs %}
+{% tab title="使用当前 Render Pass（推荐）" %}
+{% code title="beginCommandBuffer 和 endCommandBuffer 之间" %}
 ```swift
+// MARK: - Render Pass
+guard let mtl4RenderPassDescriptor = view.currentMTL4RenderPassDescriptor else { return }
+// 清空所使用的颜色（可选，一片死黑不太好看）
+mtl4RenderPassDescriptor.colorAttachments[0].clearColor = MTLClearColor(red: 0.2, green: 0.2, blue: 0.25, alpha: 1.0)
+```
+{% endcode %}
+{% endtab %}
+
+{% tab title="自己准备一个 Render Pass" %}
+```swift
+// MARK: - Render Pass
 let mtl4RenderPassDescriptor = MTL4RenderPassDescriptor()
 // 渲染到屏幕纹理
 mtl4RenderPassDescriptor.colorAttachments[0].texture = drawable.texture
 // 渲染前清空画布
 mtl4RenderPassDescriptor.colorAttachments[0].loadAction = .clear
-// 清空所使用的颜色
+// 清空所使用的颜色（可选，一片死黑不太好看）
 mtl4RenderPassDescriptor.colorAttachments[0].clearColor  = MTLClearColor(red: 0.2, green: 0.2, blue: 0.25, alpha: 1.0)
 ```
+{% endtab %}
+{% endtabs %}
 
 继续准备 **Render Command Encoder**，它用于录制渲染命令，但我们啥也不录制
 
 ```swift
-guard let renderEncoder = commandBuffer.makeRenderCommandEncoder(descriptor: mtl4RenderPassDescriptor, options: MTL4RenderEncoderOptions()) else { return }
+// MARK: - 开始编码渲染 Begin Render Encoder
+guard let renderEncoder = commandBuffer.makeRenderCommandEncoder(
+    descriptor: mtl4RenderPassDescriptor,
+    options: MTL4RenderEncoderOptions()
+) else { return }
+
+
+// MARK: - 结束渲染编码 End Render Encoder
 renderEncoder.endEncoding()
 ```
 
-至此，点击运行应该能看见一个清屏颜色的背景了。
+至此，窗口上洋红色应该变成了清屏的颜色（没有的话就是黑色）。
 
 延伸阅读：[ming-ling-dui-lie-command-queue](../../ming-ling-dui-lie-command-queue/ "mention")
