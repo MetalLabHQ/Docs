@@ -19,7 +19,7 @@ let result = dot(A, B)  // A ⋅ B 计算 1×4 + 2×5 + 3×6 = 32
 * 可以对一个向量进行垂直、水平等方向的分解
 * 用于计算两个向量是否接近
 
-可以被表示为 $$\vec{a} \cdot \vec{b} = |\vec{a}| |\vec{b}| \cos(\theta)$$ 即 AB 向量的长度 乘 $\cos(\theta)$，也等同于： $$\cos(\theta) = \frac{\vec{a} \cdot \vec{b}}{|\vec{a}||\vec{b}|}$$ 对于 [dan-wei-xiang-liang-unit-vector.md](dan-wei-xiang-liang-unit-vector.md "mention") 而言，点乘运算将变得简单： $$\cos(\theta) = \hat{a} \cdot \hat{b}$$
+可以被表示为 $$\vec{a} \cdot \vec{b} = |\vec{a}| |\vec{b}| \cos(\theta)$$ 即 AB 向量的长度 乘 $$\cos(\theta)$$ ，也等同于： $$\cos(\theta) = \frac{\vec{a} \cdot \vec{b}}{|\vec{a}||\vec{b}|}$$ 对于 [dan-wei-xiang-liang-unit-vector.md](dan-wei-xiang-liang-unit-vector.md "mention") 而言，点乘运算将变得简单： $$\cos(\theta) = \hat{a} \cdot \hat{b}$$
 
 两个 3D 向量 A(Ax, Ay, Az) 和 B(Bx, By, Bz) 的点积计算公式如下，其他维度同理
 

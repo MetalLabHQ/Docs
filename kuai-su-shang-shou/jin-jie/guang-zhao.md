@@ -1,16 +1,16 @@
 ---
-description: 古法打光
+description: 神说，要有光
 ---
 
 # 光照
 
-下载以下工程作为起点：
-
-{% file src="../../.gitbook/assets/Lighting.7z" %}
-
 本章节会教你如何为物体添加上光照效果，完整代码：
 
 {% embed url="https://github.com/MetalLabHQ/Lighting" %}
+
+下载以下工程作为起点：
+
+{% file src="../../.gitbook/assets/Lighting.7z" %}
 
 ## 法线 Normal
 

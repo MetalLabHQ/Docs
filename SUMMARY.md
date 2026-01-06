@@ -1,8 +1,8 @@
 # Table of contents
 
 * [关于 Metal Lab](README.md)
-* [防走丢](fang-zou-diu.md)
 * [我需要什么？](wo-xu-yao-shen-me.md)
+* [防走丢](fang-zou-diu.md)
 
 ## 快速上手
 
@@ -16,6 +16,7 @@
   * [加载模型](kuai-su-shang-shou/ru-men/jia-zai-mo-xing.md)
 * [进阶](kuai-su-shang-shou/jin-jie/README.md)
   * [光照](kuai-su-shang-shou/jin-jie/guang-zhao.md)
+  * [加载模型进阶](kuai-su-shang-shou/jin-jie/jia-zai-mo-xing-jin-jie.md)
   * [阴影](kuai-su-shang-shou/jin-jie/yin-ying.md)
   * [发生什么事了？](kuai-su-shang-shou/jin-jie/fa-sheng-shen-me-shi-le.md)
 
