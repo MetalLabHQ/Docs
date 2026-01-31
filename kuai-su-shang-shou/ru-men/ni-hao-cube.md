@@ -376,7 +376,7 @@ typedef struct {
 var uniformsBuffer: MTLBuffer // Uniforms 缓冲区
 
 self.uniformsBuffer = device.makeBuffer(
-    length: MemoryLayout<Uniforms>.size
+    length: MemoryLayout<Uniforms>.stride
 )!
 ```
 
@@ -441,7 +441,7 @@ func updateUniforms(uniformBuffer: MTLBuffer, aspect: Float) {
     var uniforms = Uniforms(mvpMatrix: mvpMatrix)
     
     // 复制到 GPU 缓冲区
-    memcpy(uniformBuffer.contents(), &uniforms, MemoryLayout<Uniforms>.size)
+    memcpy(uniformBuffer.contents(), &uniforms, MemoryLayout<Uniforms>.stride)
 }
 ```
 

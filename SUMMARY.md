@@ -2,7 +2,7 @@
 
 * [关于 Metal Lab](README.md)
 * [我需要什么？](wo-xu-yao-shen-me.md)
-* [防走丢](fang-zou-diu.md)
+* [防走丢（联系作者/加入群聊）](fang-zou-diu-lian-xi-zuo-zhe-jia-ru-qun-liao.md)
 
 ## 快速上手
 
