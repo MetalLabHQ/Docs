@@ -1,8 +1,8 @@
 ---
-description: 后面还会更进一步
+description: 见见 USD 模型格式
 ---
 
-# 加载模型进阶
+# 加载多 Mesh 模型
 
 在之前的课程中，我们学习了如何加载 OBJ 模型，但如果你尝试过使用自己的模型去加载的话，往往会报错或加载出错
 
@@ -15,6 +15,10 @@ description: 后面还会更进一步
 {% file src="../../.gitbook/assets/LoadUSD.7z" %}
 初始工程
 {% endfile %}
+
+完整代码：
+
+{% embed url="https://github.com/MetalLabHQ/LoadUSD.git" %}
 
 可以下载下方的 USDZ 模型并放进 Assets 路径：
 
@@ -101,9 +105,21 @@ extension MDLVertexDescriptor {
 }
 </code></pre>
 
-运行工程，你应该能看到一个灰色的盒子旋转
+记得删掉之前的 ：
 
+```swift
+let vertexDescriptor = MTKMetalVertexDescriptorFromModelIO(asset.vertexDescriptor!)!
+```
 
+修改 PipelineDescriptior 的 vertexDescriptor：
+
+```swift
+pipelineDescriptor.vertexDescriptor = .defaultLayout
+```
+
+运行工程，你应该能看到一个灰色的盒子旋转了！
+
+***
 
 结束了么？让我们换一个 USDZ 模型试试：
 
@@ -677,4 +693,39 @@ let uniformsBufferAddress = uniformsBuffer.gpuAddress + UInt64(offset)
 argumentTable.setAddress(uniformsBufferAddress, index: 1)
 ```
 
-最后再绘制
+至此，你应该能看到一个 Hammer 了！
+
+但这次渲染只是碰巧我们使用的模型是每个 Submesh 都有自己独立 Buffer 或 offset 为 0，但这不代表这段绘制代码能渲染出所有的模型，对于多个 Submesh 共享一个 Buffer 的情况，这段代码就不太可用了
+
+保险起见是通过 indexBuffer 起始位置加上每个 subMeshes 的偏移量计算出实际的起始位置，再通过总长度 `indexBuffer.length` 减去偏移量计算出这个 Buffer 的长度
+
+```swift
+for submesh in mesh.submeshes {
+    let indexBufferAddress = submesh.indexBuffer.gpuAddress + UInt64(submesh.indexBufferOffset)
+    let indexBufferLength = submesh.indexBuffer.length - submesh.indexBufferOffset
+    
+    renderEncoder.drawIndexedPrimitives(
+        primitiveType: .triangle,
+        indexCount: submesh.indexCount,
+        indexType: submesh.indexType,
+        indexBuffer: indexBufferAddress,
+        indexBufferLength: indexBufferLength
+    )
+}
+```
+
+至此，无论是什么模型都能够正常渲染了。
+
+<figure><img src="../../.gitbook/assets/一个 Hammer.png" alt="" width="375"><figcaption></figcaption></figure>
+
+不过可以试个好玩的：在 model Matrix 上加一个 rotationY：
+
+```swift
+let modelMatrix = mesh.transform * float4x4(rotationY: timer)
+```
+
+会发现锤头和锤柄各自原地旋转，而不是作为一个整体旋转：
+
+<figure><img src="../../.gitbook/assets/以自己为中心旋转的 Hammer.png" alt="" width="375"><figcaption></figcaption></figure>
+
+这是因为 Model Matrix 是独自运用在一个局部位置，如果需要旋转，需要运用于整个 Entity，在后面的章节中，会慢慢解释如何让模型作为一个整体去旋转

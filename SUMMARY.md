@@ -16,7 +16,7 @@
   * [加载模型](kuai-su-shang-shou/ru-men/jia-zai-mo-xing.md)
 * [进阶](kuai-su-shang-shou/jin-jie/README.md)
   * [光照](kuai-su-shang-shou/jin-jie/guang-zhao.md)
-  * [加载模型进阶](kuai-su-shang-shou/jin-jie/jia-zai-mo-xing-jin-jie.md)
+  * [加载多 Mesh 模型](kuai-su-shang-shou/jin-jie/jia-zai-duo-mesh-mo-xing.md)
   * [阴影](kuai-su-shang-shou/jin-jie/yin-ying.md)
   * [发生什么事了？](kuai-su-shang-shou/jin-jie/fa-sheng-shen-me-shi-le.md)
 
