@@ -1,5 +1,5 @@
 ---
-description: 见见 USD 模型格式
+description: Wooden见见 USD 模型格式
 ---
 
 # 加载多 Mesh 模型
@@ -113,9 +113,13 @@ let vertexDescriptor = MTKMetalVertexDescriptorFromModelIO(asset.vertexDescripto
 
 修改 PipelineDescriptior 的 vertexDescriptor：
 
-```swift
-pipelineDescriptor.vertexDescriptor = .defaultLayout
-```
+<pre class="language-swift"><code class="lang-swift">// MARK: - Descriptor
+let pipelineDescriptor = MTL4RenderPipelineDescriptor()
+pipelineDescriptor.vertexFunctionDescriptor        = vertexFunctionDescriptor
+pipelineDescriptor.fragmentFunctionDescriptor      = fragmentFunctionDescriptor
+<strong>pipelineDescriptor.vertexDescriptor                = .defaultLayout
+</strong>pipelineDescriptor.colorAttachments[0].pixelFormat = .bgra8Unorm
+</code></pre>
 
 运行工程，你应该能看到一个灰色的盒子旋转了！
 
@@ -128,10 +132,7 @@ pipelineDescriptor.vertexDescriptor = .defaultLayout
 {% code title="Renderer.swift" %}
 ```swift
 let camera = Camera(
-        position: SIMD3<Float>(0, 10, 15), // 调整了一下相机位置
-        target: SIMD3<Float>(0, 0, 0),
-        up: SIMD3<Float>(0, 1, 0)
-
+    position: SIMD3<Float>(0, 10, 15), // 调整了一下相机位置
     target: SIMD3<Float>(0, 0, 0),
     up: SIMD3<Float>(0, 1, 0)
 )
@@ -150,108 +151,35 @@ MTLResidencySet 是苹果在 iOS 18+ 中引入的显式 GPU 资源管理模型�
 
 并且 ResidencySet 绑定到 **MTL4CommandBuffer** 或 **MTL4CommandQueue** 中，里面所有资源对该命令缓冲下的所有编码器都可用，不用反复声明
 
-接下来，在 Renderer 中声明 ResidencySet：
+在 Renderer 中声明 ResidencySet：
 
-{% tabs %}
-{% tab title="创建 MTLResidencySet" %}
-{% code title="Renderer.swift" %}
-```swift
-let residencySet: MTLResidencySet
+<pre class="language-swift" data-title="Renderer.swift"><code class="lang-swift">// MARK: - Command Queue
+let commandQueue: MTL4CommandQueue
+let commandBuffer: MTL4CommandBuffer
+let commandAllocator: MTL4CommandAllocator
+<strong>let residencySet: MTLResidencySet
+</strong>
 
 init() {
     // MARK: - State
-    // 持久化资源
-    self.residencySet = try device
-        .makeResidencySet(descriptor: MTLResidencySetDescriptor())
-    
-    // MARK: - Command Queue
-    // 绑定至命令队列
-    self.commandQueue.addResidencySet(residencySet)
-}
-```
-{% endcode %}
-{% endtab %}
-
-{% tab title="init() 完整代码" %}
-<pre class="language-swift" data-title="Renderer.swift"><code class="lang-swift">let residencySet: MTLResidencySet
-
-init(device: MTLDevice) throws {
-    self.device = device
-    
-    let asset = AssetsLoader.loadAssets(named: "Hammer", ext: "usdz", device: device)!
-    AssetsLoader.printAssetInfo(asset: asset)
-    
-    for i in 0..&#x3C;asset.count {
-        let object = asset.object(at: i)
-        entities.append(Entity(object: object, device: device))
-    }
-    
-    let vertexDescriptor = MTKMetalVertexDescriptorFromModelIO(asset.vertexDescriptor!)!
-    
-    // MARK: - Buffers
-    self.uniformsBuffer = device.makeBuffer(
-        length: MemoryLayout&#x3C;Uniforms>.size
-    )!
-    
-    // 参数表
-    let argTableDescriptor = MTL4ArgumentTableDescriptor()
-    argTableDescriptor.maxBufferBindCount = 2
-    self.argumentTable = try device.makeArgumentTable(descriptor: argTableDescriptor)
-    self.argumentTable.setAddress(uniformsBuffer.gpuAddress, index: 1)
-    
-    
-    // MARK: - Load Shaders
-    let library = device.makeDefaultLibrary()!
-    
-    // 顶点着色器
-    let vertexFunctionDescriptor       = MTL4LibraryFunctionDescriptor()
-    vertexFunctionDescriptor.library   = library
-    vertexFunctionDescriptor.name      = "vertex_main"
-    
-    // 片元着色器
-    let fragmentFunctionDescriptor     = MTL4LibraryFunctionDescriptor()
-    fragmentFunctionDescriptor.library = library
-    fragmentFunctionDescriptor.name    = "fragment_main"
-    
-    
-    // MARK: - Descriptor
-    // 渲染管线描述符
-    let pipelineDescriptor = MTL4RenderPipelineDescriptor()
-    pipelineDescriptor.vertexFunctionDescriptor        = vertexFunctionDescriptor
-    pipelineDescriptor.fragmentFunctionDescriptor      = fragmentFunctionDescriptor
-    pipelineDescriptor.vertexDescriptor                = vertexDescriptor
-    pipelineDescriptor.colorAttachments[0].pixelFormat = .bgra8Unorm
-    
-    // 深度模板描述符
-    let depthStateDescriptor = MTLDepthStencilDescriptor()
-    depthStateDescriptor.depthCompareFunction = .less
-    depthStateDescriptor.isDepthWriteEnabled = true
-    
-    // MARK: - State
-    // 渲染管线状态
+    // 创建渲染管线状态
     self.pipelineState = try device
         .makeCompiler(descriptor: MTL4CompilerDescriptor())
         .makeRenderPipelineState(descriptor: pipelineDescriptor)
-    // 深度测试状态
     self.depthState = device
         .makeDepthStencilState(descriptor: depthStateDescriptor)!
-<strong>    // 创建持久化资源
+<strong>    // 持久化资源
 </strong><strong>    self.residencySet = try device
 </strong><strong>        .makeResidencySet(descriptor: MTLResidencySetDescriptor())
 </strong>    
-    
     // MARK: - Command Queue
     self.commandQueue = device.makeMTL4CommandQueue()!
     self.commandBuffer = device.makeCommandBuffer()!
     self.commandAllocator = device.makeCommandAllocator()!
-    // 绑定到命令队列上
-<strong>    self.commandQueue.addResidencySet(residencySet)
-</strong>    
-    super.init()
-}
+<strong>    // 绑定至命令队列
+</strong><strong>    self.commandQueue.addResidencySet(residencySet)
+</strong>}
 </code></pre>
-{% endtab %}
-{% endtabs %}
 
 就完成了 ResidencySet 的创建，接下来就是将数据写进 Set 中
 
@@ -298,16 +226,19 @@ let allocations: [MTLAllocation] = [uniformsBuffer] + entities
 
 最后一次性提交到 ResidencySet 上，这样 GPU 就能访问到了：
 
-{% code title="Renderer.swift" %}
-```swift
-// MARK: - State
-// 持久化资源
-self.residencySet = try device
-    .makeResidencySet(descriptor: MTLResidencySetDescriptor())
-self.residencySet.addAllocations(allocations)
-self.residencySet.commit()
-```
-{% endcode %}
+<pre class="language-swift" data-title="Renderer.swift"><code class="lang-swift">// MARK: - State
+// 创建渲染管线状态
+self.pipelineState = try device
+    .makeCompiler(descriptor: MTL4CompilerDescriptor())
+    .makeRenderPipelineState(descriptor: pipelineDescriptor)
+self.depthState = device
+    .makeDepthStencilState(descriptor: depthStateDescriptor)!
+<strong>// 持久化资源
+</strong><strong>self.residencySet = try device
+</strong><strong>    .makeResidencySet(descriptor: MTLResidencySetDescriptor())
+</strong><strong>self.residencySet.addAllocations(allocations)
+</strong><strong>self.residencySet.commit()
+</strong></code></pre>
 
 至此再运行工程，你就会看到这个 Hammer.usdz 了
 
@@ -458,7 +389,7 @@ class Entity {
 <pre class="language-swift" data-title="Renderer.swift"><code class="lang-swift">func renderEntity(_ entity: Entity, renderEncoder: MTL4RenderCommandEncoder) {
     for mesh in entity.meshes {
         guard !mesh.vertexBuffers.isEmpty else { continue }
-<strong>        let modelMatrix = sceneMatrix * mesh.transform // 用这个 modelMatrix 去计算 MVP
+<strong>        let modelMatrix = mesh.transform // 用这个 modelMatrix 去计算 MVP
 </strong>        
     }
 }
@@ -513,7 +444,7 @@ func renderEntity(
 }
 ```
 
-但再思考一下 🤔，如果有多个 Entity呢？看看外面是如何定义的：
+但再思考一下 🤔，如果有多个 Entity 的情况呢？看看外面是如何定义的：
 
 ```swift
 for entity in entities {  // 可能有多个 Entity
@@ -521,7 +452,7 @@ for entity in entities {  // 可能有多个 Entity
 }
 ```
 
-会导致每个 Entity 内部的 `index` 都会从 0 重新开始，**不同 Entity 的 Mesh 数据会相互覆盖！**
+相当于每次都会创建一个 uniformIndex，会导致每个 Entity 内部的 `index` 都会从 0 重新开始，**不同 Entity 的 Mesh 数据会相互覆盖！**&#x6240;以需要将 uniformIndex 定义在外部
 
 此处有两种解法：
 
@@ -684,14 +615,23 @@ func updateUniforms(
 
 但上面的修改 Mesh 数据结构中，已经用 `vertexBufferOffsets` 保存了每个 Buffer 的偏移量，对此只需要计算出 vertexBuffer 和 uniformsBufer 在此次循环中的地址就好了，修改：
 
-```swift
-// 使用之前记录的 mesh.vertexBufferOffsets[0]
-let vertexBufferAddress = mesh.vertexBuffers[0].gpuAddress + UInt64(mesh.vertexBufferOffsets[0])
-argumentTable.setAddress(vertexBufferAddress, index: 0)
-// 使用上方计算的此次循环中 UniformsBuffer 的 offset
-let uniformsBufferAddress = uniformsBuffer.gpuAddress + UInt64(offset)
-argumentTable.setAddress(uniformsBufferAddress, index: 1)
-```
+<pre class="language-swift"><code class="lang-swift">updateUniforms(
+    uniformsBuffer,
+    offset: offset,
+    modelMatrix: modelMatrix,
+    viewMatrix: viewMatrix,
+    projectionMatrix: projectionMatrix
+)
+
+<strong>// 使用之前记录的 mesh.vertexBufferOffsets[0]
+</strong><strong>let vertexBufferAddress = mesh.vertexBuffers[0].gpuAddress + UInt64(mesh.vertexBufferOffsets[0])
+</strong><strong>argumentTable.setAddress(vertexBufferAddress, index: 0)
+</strong><strong>// 使用上方计算的此次循环中 UniformsBuffer 的 offset
+</strong><strong>let uniformsBufferAddress = uniformsBuffer.gpuAddress + UInt64(offset)
+</strong><strong>argumentTable.setAddress(uniformsBufferAddress, index: 1)
+</strong>
+for submesh in mesh.submeshes {
+</code></pre>
 
 至此，你应该能看到一个 Hammer 了！
 
@@ -699,20 +639,49 @@ argumentTable.setAddress(uniformsBufferAddress, index: 1)
 
 保险起见是通过 indexBuffer 起始位置加上每个 subMeshes 的偏移量计算出实际的起始位置，再通过总长度 `indexBuffer.length` 减去偏移量计算出这个 Buffer 的长度
 
-```swift
-for submesh in mesh.submeshes {
-    let indexBufferAddress = submesh.indexBuffer.gpuAddress + UInt64(submesh.indexBufferOffset)
-    let indexBufferLength = submesh.indexBuffer.length - submesh.indexBufferOffset
-    
-    renderEncoder.drawIndexedPrimitives(
-        primitiveType: .triangle,
-        indexCount: submesh.indexCount,
-        indexType: submesh.indexType,
-        indexBuffer: indexBufferAddress,
-        indexBufferLength: indexBufferLength
-    )
+<pre class="language-swift"><code class="lang-swift">func renderEntity(
+    _ entity: Entity,
+    renderEncoder: MTL4RenderCommandEncoder,
+    viewMatrix: float4x4,
+    projectionMatrix: float4x4
+) {
+    for mesh in entity.meshes {
+        guard !mesh.vertexBuffers.isEmpty else { continue }
+        let modelMatrix = mesh.transform
+        let offset = uniformIndex * MemoryLayout&#x3C;Uniforms>.stride
+        uniformIndex += 1
+        
+        updateUniforms(
+            uniformsBuffer,
+            offset: offset,
+            modelMatrix: modelMatrix,
+            viewMatrix: viewMatrix,
+            projectionMatrix: projectionMatrix
+        )
+        
+        // 使用之前记录的 mesh.vertexBufferOffsets[0]
+        let vertexBufferAddress = mesh.vertexBuffers[0].gpuAddress + UInt64(mesh.vertexBufferOffsets[0])
+        argumentTable.setAddress(vertexBufferAddress, index: 0)
+        // 使用上方计算的此次循环中 UniformsBuffer 的 offset
+        let uniformsBufferAddress = uniformsBuffer.gpuAddress + UInt64(offset)
+        argumentTable.setAddress(uniformsBufferAddress, index: 1)
+        
+<strong>        for submesh in mesh.submeshes {
+</strong><strong>            let indexBufferAddress = submesh.indexBuffer.gpuAddress + UInt64(submesh.indexBufferOffset)
+</strong><strong>            let indexBufferLength = submesh.indexBuffer.length - submesh.indexBufferOffset
+</strong><strong>            
+</strong><strong>            renderEncoder.drawIndexedPrimitives(
+</strong><strong>                primitiveType: .triangle,
+</strong><strong>                indexCount: submesh.indexCount,
+</strong><strong>                indexType: submesh.indexType,
+</strong><strong>                indexBuffer: indexBufferAddress,
+</strong><strong>                indexBufferLength: indexBufferLength
+</strong><strong>            )
+</strong><strong>        }
+</strong>    }
 }
-```
+
+</code></pre>
 
 至此，无论是什么模型都能够正常渲染了。
 
@@ -728,4 +697,159 @@ let modelMatrix = mesh.transform * float4x4(rotationY: timer)
 
 <figure><img src="../../.gitbook/assets/以自己为中心旋转的 Hammer.png" alt="" width="375"><figcaption></figcaption></figure>
 
-这是因为 Model Matrix 是独自运用在一个局部位置，如果需要旋转，需要运用于整个 Entity，在后面的章节中，会慢慢解释如何让模型作为一个整体去旋转
+这是因为 Model Matrix 是独自运用在一个局部位置，如果需要旋转，需要运用于整个 Entity
+
+
+
+#### Transformable
+
+对这些 Entity 来说，代表了一个 Asset 本体，通常会需要单独对它的 scale、position、rotation 进行单独设置，通过定义一个 Transformable 协议，方便后续快速读写它的 Transform 属性，来到 Model 下创建 Transform.swift:
+
+{% code title="Transform.swift" expandable="true" %}
+```swift
+struct Transform {
+    var position: SIMD3<Float> = .zero
+    var rotation: SIMD3<Float> = .zero
+    var scale: SIMD3<Float> = SIMD3<Float>(1, 1, 1)
+    
+    var modelMatrix: float4x4 {
+        let translation = float4x4(translation: position)
+        let rotation = float4x4(rotation: rotation)
+        let scale = float4x4(scaling: scale)
+        return translation * rotation * scale
+    }
+}
+
+protocol Transformable {
+    var transform: Transform { get set }
+}
+
+extension Transformable {
+    var position: SIMD3<Float> {
+        get { transform.position }
+        set { transform.position = newValue }
+    }
+    
+    var rotation: SIMD3<Float> {
+        get { transform.rotation }
+        set { transform.rotation = newValue }
+    }
+    
+    var scale: SIMD3<Float> {
+        get { transform.scale }
+        set { transform.scale = newValue }
+    }
+}
+```
+{% endcode %}
+
+为了方便后续编辑，创建 float4x4 的 extension 并删掉之前的 rotationY，创建 Extensions 路径并创建 float4x4+Extensions.swift
+
+{% code title="float4x4+Extensions.swift" expandable="true" %}
+```swift
+extension float4x4 {
+    init(translation t: SIMD3<Float>) {
+        self = float4x4(
+            SIMD4<Float>(1, 0, 0, 0),
+            SIMD4<Float>(0, 1, 0, 0),
+            SIMD4<Float>(0, 0, 1, 0),
+            SIMD4<Float>(t.x, t.y, t.z, 1)
+        )
+    }
+    
+    init(scaling s: SIMD3<Float>) {
+        self = float4x4(
+            SIMD4<Float>(s.x, 0, 0, 0),
+            SIMD4<Float>(0, s.y, 0, 0),
+            SIMD4<Float>(0, 0, s.z, 0),
+            SIMD4<Float>(0, 0, 0, 1)
+        )
+    }
+    
+    init(rotation r: SIMD3<Float>) {
+        let rotationX = float4x4(
+            SIMD4<Float>(1, 0, 0, 0),
+            SIMD4<Float>(0, cos(r.x), sin(r.x), 0),
+            SIMD4<Float>(0, -sin(r.x), cos(r.x), 0),
+            SIMD4<Float>(0, 0, 0, 1)
+        )
+        
+        let rotationY = float4x4(
+            SIMD4<Float>(cos(r.y), 0, -sin(r.y), 0),
+            SIMD4<Float>(0, 1, 0, 0),
+            SIMD4<Float>(sin(r.y), 0, cos(r.y), 0),
+            SIMD4<Float>(0, 0, 0, 1)
+        )
+        
+        let rotationZ = float4x4(
+            SIMD4<Float>(cos(r.z), sin(r.z), 0, 0),
+            SIMD4<Float>(-sin(r.z), cos(r.z), 0, 0),
+            SIMD4<Float>(0, 0, 1, 0),
+            SIMD4<Float>(0, 0, 0, 1)
+        )
+        
+        self = rotationZ * rotationY * rotationX
+    }
+
+    init(rotationX angle: Float) {
+        self = float4x4(
+            SIMD4<Float>(1, 0, 0, 0),
+            SIMD4<Float>(0, cos(angle), sin(angle), 0),
+            SIMD4<Float>(0, -sin(angle), cos(angle), 0),
+            SIMD4<Float>(0, 0, 0, 1)
+        )
+    }
+    
+    init(rotationY angle: Float) {
+        self = float4x4(
+            SIMD4<Float>(cos(angle), 0, -sin(angle), 0),
+            SIMD4<Float>(0, 1, 0, 0),
+            SIMD4<Float>(sin(angle), 0, cos(angle), 0),
+            SIMD4<Float>(0, 0, 0, 1)
+        )
+    }
+    
+    init(rotationZ angle: Float) {
+        self = float4x4(
+            SIMD4<Float>(cos(angle), sin(angle), 0, 0),
+            SIMD4<Float>(-sin(angle), cos(angle), 0, 0),
+            SIMD4<Float>(0, 0, 1, 0),
+            SIMD4<Float>(0, 0, 0, 1)
+        )
+    }
+}
+```
+{% endcode %}
+
+让 Entity 遵循 Transformable 协议：
+
+<pre class="language-swift" data-title="Entity.swift"><code class="lang-swift"><strong>class Entity: Transformable {
+</strong>    var name: String = "Untitled"
+    var meshes: [Mesh]
+<strong>    var transform: Transform = Transform()
+</strong>    
+    ...
+}
+</code></pre>
+
+最后使用上它，在 Renderer 的 renderEntity 函数中，修改 modelMatrix，将刚才加入的 transform 用上
+
+```swift
+let modelMatrix = entity.transform.modelMatrix * mesh.transform
+```
+
+随后，在 Draw 处，为 entity 添加旋转：
+
+<pre class="language-swift"><code class="lang-swift">// MARK: - Draw
+for entity in entities {
+<strong>    entity.transform.rotation = SIMD3&#x3C;Float>(0, timer, 0)
+</strong>    renderEntity(
+        entity,
+        renderEncoder: renderEncoder,
+        viewMatrix: viewMatrix,
+        projectionMatrix: projectionMatrix
+    )
+}
+</code></pre>
+
+至此，运行工程，应该就能看到多个 Mesh 的 Hammer 正在作为一个整体旋转了。
